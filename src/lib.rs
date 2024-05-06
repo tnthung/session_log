@@ -19,7 +19,7 @@ pub use r#macro ::*;
 /// # Exported
 /// - `session_log::logger::Logger`
 /// - `session_log::macro::*`
-mod prelude {
+pub mod prelude {
   pub use crate::logger::Logger;
   pub use crate::r#macro::*;
 }
