@@ -39,7 +39,7 @@
 macro_rules! log_debug {
   ($loggable:expr, $($arg:tt)*) => {{
     use session_log::Loggable;
-    let base = format!("{} {} - ", file!(), line!());
+    let base = format!("{}:{} - ", file!(), line!());
     let message = base + format!($($arg)*).as_str();
     $loggable.debug(message.as_str());
   }};
@@ -51,7 +51,7 @@ macro_rules! log_debug {
 macro_rules! log_verbose {
   ($loggable:expr, $($arg:tt)*) => {{
     use session_log::Loggable;
-    let base = format!("{} {} - ", file!(), line!());
+    let base = format!("{}:{} - ", file!(), line!());
     let message = base + format!($($arg)*).as_str();
     $loggable.verbose(message.as_str());
   }};
@@ -63,7 +63,7 @@ macro_rules! log_verbose {
 macro_rules! log_info {
   ($loggable:expr, $($arg:tt)*) => {{
     use session_log::Loggable;
-    let base = format!("{} {} - ", file!(), line!());
+    let base = format!("{}:{} - ", file!(), line!());
     let message = base + format!($($arg)*).as_str();
     $loggable.info(message.as_str());
   }};
@@ -75,7 +75,7 @@ macro_rules! log_info {
 macro_rules! log_warning {
   ($loggable:expr, $($arg:tt)*) => {{
     use session_log::Loggable;
-    let base = format!("{} {} - ", file!(), line!());
+    let base = format!("{}:{} - ", file!(), line!());
     let message = base + format!($($arg)*).as_str();
     $loggable.warning(message.as_str());
   }};
@@ -87,7 +87,7 @@ macro_rules! log_warning {
 macro_rules! log_critical {
   ($loggable:expr, $($arg:tt)*) => {{
     use session_log::Loggable;
-    let base = format!("{} {} - ", file!(), line!());
+    let base = format!("{}:{} - ", file!(), line!());
     let message = base + format!($($arg)*).as_str();
     $loggable.critical(message.as_str());
   }};
@@ -99,7 +99,7 @@ macro_rules! log_critical {
 macro_rules! log_error {
   ($loggable:expr, $($arg:tt)*) => {{
     use session_log::Loggable;
-    let base = format!("{} {} - ", file!(), line!());
+    let base = format!("{}:{} - ", file!(), line!());
     let message = base + format!($($arg)*).as_str();
     $loggable.error(message.as_str());
   }};
@@ -111,7 +111,7 @@ macro_rules! log_error {
 macro_rules! log_fatal {
   ($loggable:expr, $($arg:tt)*) => {{
     use session_log::Loggable;
-    let base = format!("{} {} - ", file!(), line!());
+    let base = format!("{}:{} - ", file!(), line!());
     let message = base + format!($($arg)*).as_str();
     $loggable.fatal(message.as_str());
   }};
