@@ -60,6 +60,7 @@ impl Logger {
   ///
   /// - `ErrorKind::DifferentLevel` if the existing logger has different level than the given options.
   /// - `ErrorKind::DifferentDirectory` if the existing logger has different directory than the given options.
+  /// - `ErrorKind::FailedToCreateFolder` if the directory cannot be created.
   ///
   /// # Examples
   ///
@@ -210,11 +211,9 @@ impl Logger {
   /// ```
   pub fn get_level(&self) -> Level {
     let loggers = LOGGERS.lock().unwrap();
+    let inner = loggers.get(&self.0).unwrap();
 
-    let Some(inner) = loggers.get(&self.0)
-      else { unreachable!() };
-
-    return inner.lvl;
+    inner.lvl
   }
 
   /// Set logging level for this entry
@@ -236,9 +235,7 @@ impl Logger {
   /// ```
   pub fn set_level(&mut self, level: Level) {
     let mut loggers = LOGGERS.lock().unwrap();
-
-    let Some(inner) = loggers.get_mut(&self.0)
-      else { unreachable!() };
+    let inner = loggers.get_mut(&self.0).unwrap();
 
     inner.lvl = level;
   }
@@ -258,14 +255,13 @@ impl Logger {
   /// ```
   pub fn get_directory(&self) -> String {
     let loggers = LOGGERS.lock().unwrap();
+    let inner = loggers.get(&self.0).unwrap();
 
-    let Some(inner) = loggers.get(&self.0)
-      else { unreachable!() };
-
-    return inner.dir.clone();
+    inner.dir.clone()
   }
 
-  /// Set logging directory for this entry.
+  /// Set logging directory for this entry and create the directory if it doesn't exist. the result
+  /// of creating the directory is returned.
   ///
   /// # Examples
   ///
@@ -282,13 +278,12 @@ impl Logger {
   ///   assert_eq!(logger.get_directory(), "logs/other");
   /// }
   /// ```
-  pub fn set_directory(&mut self, directory: impl Into<String>) {
+  pub fn set_directory(&mut self, directory: impl Into<String>) -> std::io::Result<()> {
     let mut loggers = LOGGERS.lock().unwrap();
-
-    let Some(inner) = loggers.get_mut(&self.0)
-      else { unreachable!() };
+    let inner = loggers.get_mut(&self.0).unwrap();
 
     inner.dir = directory.into();
+    create_dir_all(&inner.dir)
   }
 
   /// Create a new session with the given name under this logging entry.
@@ -300,8 +295,7 @@ impl Logger {
     let mut loggers = LOGGERS.lock().unwrap();
     let mut files   = FILES  .lock().unwrap();
 
-    let Some(inner) = loggers.get_mut(&self.0)
-      else { unreachable!() };
+    let inner = loggers.get_mut(&self.0).unwrap();
 
     let hr   = &mut inner.hr;
     let dir  = &inner.dir;
