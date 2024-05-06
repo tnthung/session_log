@@ -56,12 +56,19 @@ impl Session {
   pub(crate) fn new(name: &str, logger: &str) -> Session {
     let msgs = Arc::new(Mutex::new(Vec::new()));
     let sire = None;
+    let time = Local::now();
+
+    if Logger::new(logger).get_level() >= Level::Info {
+      println!("{} {:#} {logger}:{name} - Session started",
+        time.to_rfc3339_opts(SecondsFormat::Micros, true),
+        Level::Info);
+    }
 
     Session {
       died: false,
       name: name.to_string(),
       root: logger.to_string(),
-      time: Local::now(),
+      time,
       msgs,
       sire,
     }
@@ -73,12 +80,20 @@ impl Session {
 
     let msgs = Arc::new(Mutex::new(Vec::new()));
     let sire = Some(self.msgs.clone());
+    let time = Local::now();
+
+    if Logger::new(&self.root).get_level() >= Level::Info {
+      println!("{} {:#} {}:{name} - Session started",
+        time.to_rfc3339_opts(SecondsFormat::Micros, true),
+        Level::Info,
+        self.root);
+    }
 
     Ok(Session {
       died: false,
       name: name.to_string(),
       root: self.root.clone(),
-      time: Local::now(),
+      time,
       msgs,
       sire,
     })
@@ -89,12 +104,24 @@ impl Session {
     self.died = true;
 
     let mut rslt = Vec::new();
+    let     time = Local::now();
+    let     msgs = self.msgs.lock().unwrap();
+
+    rslt.reserve(7 + msgs.len());
+
+    println!("{} {:#} {}:{} - Session ended",
+      time.to_rfc3339_opts(SecondsFormat::Micros, true),
+      Level::Info,
+      self.root,
+      self.name);
 
     rslt.push(format!("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
-    rslt.push(format!("┃ Session: {}, Elapsed: {}us", self.name, (Local::now() - self.time).num_microseconds().unwrap()));
+    rslt.push(format!("┃ Session: {}", self.name));
+    rslt.push(format!("┃ Elapsed: {}us", (time - self.time).num_microseconds().unwrap()));
     rslt.push(format!("┃"));
+    rslt.push(format!("┃ {} Start", self.time.to_rfc3339_opts(SecondsFormat::Micros, true)));
 
-    for msg in self.msgs.lock().unwrap().iter() {
+    for msg in msgs.iter() {
       for line in msg.lines() {
         let is_border  = line.starts_with("┏") || line.starts_with("┗");
         let is_content = line.starts_with("┃");
@@ -106,6 +133,7 @@ impl Session {
       }
     }
 
+    rslt.push(format!("┃ {} End", time.to_rfc3339_opts(SecondsFormat::Micros, true)));
     rslt.push(format!("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
 
     if let Some(sire) = &self.sire {
