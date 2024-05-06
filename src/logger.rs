@@ -40,8 +40,8 @@ fn get_time_tuple() -> (u32, u32, u32, u32) {
 }
 
 
-fn get_file_name(y: u32, m: u32, d: u32) -> String {
-  format!("{y:04}-{m:02}-{d:02}.log")
+fn get_file_name(y: u32, m: u32, d: u32, h: u32) -> String {
+  format!("{y:04}-{m:02}-{d:02}-{h:02}.log")
 }
 
 
@@ -303,7 +303,7 @@ impl Logger {
     let file = files.get(dir).clone();
 
     if file.is_none() || now.3 != *hr {
-      let file_name = get_file_name(now.0, now.1, now.2);
+      let file_name = get_file_name(now.0, now.1, now.2, now.3);
       let file_path = format!("{}/{}", dir, file_name);
 
       let file = Arc::new(Mutex::new(OpenOptions::new()
