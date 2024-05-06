@@ -291,6 +291,11 @@ impl Logger {
     inner.dir = directory.into();
   }
 
+  /// Create a new session with the given name under this logging entry.
+  pub fn session(&self, name: &str) -> Session {
+    Session::new(name, &self.0)
+  }
+
   fn get_file(&self) -> Arc<Mutex<File>> {
     let mut loggers = LOGGERS.lock().unwrap();
     let mut files   = FILES  .lock().unwrap();
