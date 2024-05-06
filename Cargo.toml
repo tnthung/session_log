@@ -1,8 +1,10 @@
 [package]
-name       = "session_log"
-version    = "0.1.0"
-edition    = "2021"
-repository = "https://githib.com/tnthung/session_log"
+name        = "session_log"
+version     = "0.1.0"
+edition     = "2021"
+license     = "MIT"
+repository  = "https://githib.com/tnthung/session_log"
+description = "A simple session log library for Rust."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
