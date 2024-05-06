@@ -12,3 +12,14 @@ pub use loggable::Loggable;
 pub use logger  ::Logger;
 pub use session ::Session;
 pub use r#macro ::*;
+
+
+/// Re-export the most basic requirement to use the library.
+///
+/// # Exported
+/// - `session_log::logger::Logger`
+/// - `session_log::macro::*`
+mod prelude {
+  pub use crate::logger::Logger;
+  pub use crate::r#macro::*;
+}
