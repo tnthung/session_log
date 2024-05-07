@@ -39,7 +39,7 @@ pub trait Loggable {
   ///
   /// **THIS WILL CAUSE THE PROGRAM TO PANIC**\
   /// **ONLY USE THIS FOR UNRECOVERABLE ERRORS**
-  fn fatal(&self, message: &str) {
+  fn fatal(&self, message: &str) -> ! {
     self.log(Level::Fatal, message);
     panic!("{}", message);
   }
