@@ -16,25 +16,25 @@ fn main() {
     let logger = Logger::new("main");
 
     // Log a message directly to the logger
-    log_info!(logger, "Hello, world!");
+    logger.info("Hello, world!");
 
     // Create a new session
     {
         let session = logger.session();
 
         // Log some messages in the session
-        log_info!(session, "Hello, session!");
+        session.info("Hello, session!");
 
         // Create a new session in the session
         {
             let session = session.session();
 
             // Log some messages in the session
-            log_info!(session, "Hello, nested session!");
+            session.info("Hello, nested session!");
         }
 
         // Log some messages in the session
-        log_info!(session, "Goodbye, session!");
+        session.info("Goodbye, session!");
     }
 }
 ```
