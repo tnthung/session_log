@@ -49,32 +49,41 @@ pub struct Session {
   msgs: LogContext,
   sire: Option<LogContext>,
   time: DateTime<Local>,
+  file: &'static str,
+  line: u32,
 }
 
 
 impl Session {
-  pub(crate) fn new(name: &str, logger: &str) -> Session {
+  pub(crate) fn new(name: &str, logger: &str, file: &'static str, line: u32) -> Session {
     let msgs = Arc::new(Mutex::new(Vec::new()));
     let sire = None;
     let time = Local::now();
 
-    if Logger::new(logger).get_level() >= Level::Info {
-      println!("{} {:#} {logger}:{name} - Session started",
-        time.to_rfc3339_opts(SecondsFormat::Micros, true),
-        Level::Info);
-    }
-
-    Session {
+    let ses = Session {
       died: false,
       name: name.to_string(),
       root: logger.to_string(),
       time,
       msgs,
       sire,
-    }
+      file,
+      line,
+    };
+
+    ses.log(Context::SessionStart {
+      time,
+      file,
+      line,
+      logger,
+      session: name,
+    });
+
+    ses
   }
 
   /// Create a nested session under the current session.
+  #[track_caller]
   pub fn session(&self, name: &str) -> Result<Session, SessionErrorKind> {
     if self.died { return Err(SessionErrorKind::SessionDied); }
 
@@ -82,21 +91,30 @@ impl Session {
     let sire = Some(self.msgs.clone());
     let time = Local::now();
 
-    if Logger::new(&self.root).get_level() >= Level::Info {
-      println!("{} {:#} {}:{name} - Session started",
-        time.to_rfc3339_opts(SecondsFormat::Micros, true),
-        Level::Info,
-        self.root);
-    }
+    let loc  = std::panic::Location::caller();
+    let file = loc.file();
+    let line = loc.line();
 
-    Ok(Session {
+    let ses = Session {
       died: false,
       name: name.to_string(),
       root: self.root.clone(),
       time,
       msgs,
       sire,
-    })
+      file,
+      line,
+    };
+
+    ses.log(Context::SessionStart {
+      time,
+      file,
+      line,
+      logger : &self.root,
+      session: &self.name,
+    });
+
+    Ok(ses)
   }
 
   pub(self) fn dump(&mut self) {
@@ -119,7 +137,6 @@ impl Session {
     rslt.push(format!("┃ Session: {}", self.name));
     rslt.push(format!("┃ Elapsed: {}us", (time - self.time).num_microseconds().unwrap()));
     rslt.push(format!("┃"));
-    rslt.push(format!("┃ {} Start", self.time.to_rfc3339_opts(SecondsFormat::Micros, true)));
 
     for msg in msgs.iter() {
       for line in msg.lines() {
@@ -133,7 +150,6 @@ impl Session {
       }
     }
 
-    rslt.push(format!("┃ {} End", time.to_rfc3339_opts(SecondsFormat::Micros, true)));
     rslt.push(format!("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
 
     if let Some(sire) = &self.sire {
@@ -147,26 +163,38 @@ impl Session {
 
 
 impl Loggable for Session {
-  fn log(&self, level: Level, message: &str) {
+  fn log(&self, ctx: crate::Context) {
     if self.died { return; }
 
     let logger = Logger::new(&self.root);
-    if level < logger.get_level() { return; }
+    if let Some(level) = ctx.get_level() {
+      if level < &logger.get_level() { return; }
+    }
 
-    let time = Local::now().to_rfc3339_opts(SecondsFormat::Micros, true);
-    let root = &self.root;
-    let name = &self.name;
-
-    println!("{time} {level:#} {root}:{name} - {message}");
-    let message = format!("{time} {level} {root}:{name} - {message}");
+    let message = (logger.get_proc())(&ctx);
     self.msgs.lock().unwrap().push(message);
+  }
+
+  fn get_logger(&self) -> &str {
+    &self.root
+  }
+
+  fn get_session(&self) -> Option<&str> {
+    Some(&self.name)
   }
 }
 
 
 impl Drop for Session {
   fn drop(&mut self) {
+    self.log(Context::SessionEnd {
+      time   : Local::now(),
+      file   : self.file,
+      line   : self.line,
+      logger : &self.root,
+      session: &self.name,
+    });
+
     self.dump();
   }
 }
-

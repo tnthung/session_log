@@ -3,6 +3,7 @@ use chrono::prelude::*;
 
 
 /// Context of each log message.
+#[derive(Debug)]
 pub enum Context<'a> {
   /// Regular log message. All log made by logger will have this context.
   Log {
