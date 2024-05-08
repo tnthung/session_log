@@ -17,7 +17,6 @@ struct Inner {
   lvl : Level,
   hr  : u32,
   dir : String,
-  #[cfg(feature = "custom_format")]
   proc: Arc<fn(&Context) -> String>
 }
 
@@ -82,7 +81,6 @@ impl Logger {
         lvl : Level::Info,
         dir : "logs".to_string(),
         hr  : Local::now().hour(),
-        #[cfg(feature = "custom_format")]
         proc: Arc::new(crate::context::processor),
       });
     }
@@ -184,7 +182,6 @@ impl Logger {
     Ok(self)
   }
 
-  #[cfg(feature = "custom_format")]
   pub(crate) fn get_proc(&self) -> Arc<fn(&Context) -> String> {
     let loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get(&self.0).unwrap();
@@ -209,7 +206,6 @@ impl Logger {
   ///     });
   /// }
   /// ```
-  #[cfg(feature = "custom_format")]
   pub fn set_proc(self, proc: fn(&Context) -> String) -> Self {
     let mut loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get_mut(&self.0).unwrap();
@@ -276,13 +272,7 @@ impl Loggable for Logger {
         return;
       }
 
-      #[cfg(feature = "custom_format")] {
-        &(inner.proc)(&ctx)
-      }
-
-      #[cfg(not(feature = "custom_format"))] {
-        &crate::context::processor(&ctx)
-      }
+      &(inner.proc)(&ctx)
     }).unwrap()
   }
 
