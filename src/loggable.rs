@@ -14,7 +14,7 @@ pub trait Loggable {
 
   /// Log a message at the debug level with caller position.
   #[track_caller]
-  fn debug(&self, message: &str) {
+  fn debug(&self, message: impl Into<String>) {
     let loc = std::panic::Location::caller();
 
     self.log(Context::Log {
@@ -24,13 +24,13 @@ pub trait Loggable {
       line   : loc.line(),
       logger : self.get_logger (),
       session: self.get_session(),
-      message,
+      message: &message.into(),
     });
   }
 
   /// Log a message at the verbose level with caller position.
   #[track_caller]
-  fn verbose(&self, message: &str) {
+  fn verbose(&self, message: impl Into<String>) {
     let loc = std::panic::Location::caller();
 
     self.log(Context::Log {
@@ -40,13 +40,13 @@ pub trait Loggable {
       line   : loc.line(),
       logger : self.get_logger (),
       session: self.get_session(),
-      message,
+      message: &message.into(),
     });
   }
 
   /// Log a message at the info level with caller position.
   #[track_caller]
-  fn info(&self, message: &str) {
+  fn info(&self, message: impl Into<String>) {
     let loc = std::panic::Location::caller();
 
     self.log(Context::Log {
@@ -56,13 +56,13 @@ pub trait Loggable {
       line   : loc.line(),
       logger : self.get_logger (),
       session: self.get_session(),
-      message,
+      message: &message.into(),
     });
   }
 
   /// Log a message at the warning level with caller position.
   #[track_caller]
-  fn warning(&self, message: &str) {
+  fn warning(&self, message: impl Into<String>) {
     let loc = std::panic::Location::caller();
 
     self.log(Context::Log {
@@ -72,13 +72,13 @@ pub trait Loggable {
       line   : loc.line(),
       logger : self.get_logger (),
       session: self.get_session(),
-      message,
+      message: &message.into(),
     });
   }
 
   /// Log a message at the critical level with caller position.
   #[track_caller]
-  fn critical(&self, message: &str) {
+  fn critical(&self, message: impl Into<String>) {
     let loc = std::panic::Location::caller();
 
     self.log(Context::Log {
@@ -88,13 +88,13 @@ pub trait Loggable {
       line   : loc.line(),
       logger : self.get_logger (),
       session: self.get_session(),
-      message,
+      message: &message.into(),
     });
   }
 
   /// Log a message at the error level with caller position.
   #[track_caller]
-  fn error(&self, message: &str) {
+  fn error(&self, message: impl Into<String>) {
     let loc = std::panic::Location::caller();
 
     self.log(Context::Log {
@@ -104,7 +104,7 @@ pub trait Loggable {
       line   : loc.line(),
       logger : self.get_logger (),
       session: self.get_session(),
-      message,
+      message: &message.into(),
     });
   }
 
@@ -113,8 +113,9 @@ pub trait Loggable {
   /// **THIS WILL CAUSE THE PROGRAM TO PANIC**\
   /// **ONLY USE THIS FOR UNRECOVERABLE ERRORS**
   #[track_caller]
-  fn fatal(&self, message: &str) -> ! {
+  fn fatal(&self, message: impl Into<String>) -> ! {
     let loc = std::panic::Location::caller();
+    let message = message.into();
 
     self.log(Context::Log {
       time   : Local::now(),
@@ -123,9 +124,9 @@ pub trait Loggable {
       line   : loc.line(),
       logger : self.get_logger (),
       session: self.get_session(),
-      message,
+      message: &message,
     });
 
-    panic!("{}", message);
+    panic!("{message}");
   }
 }
