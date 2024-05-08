@@ -171,10 +171,10 @@ impl Loggable for Session {
       if level < &logger.get_level() { return; }
     }
 
-    #[cfg(custom_format)]
+    #[cfg(feature = "custom_format")]
     let message = (logger.get_proc())(&ctx);
 
-    #[cfg(not(custom_format))]
+    #[cfg(not(feature = "custom_format"))]
     let message = crate::context::processor(&ctx);
 
     self.msgs.lock().unwrap().push(message);
