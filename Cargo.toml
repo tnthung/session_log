@@ -12,3 +12,6 @@ description = "A simple session log library for Rust."
 uuid      = "1.8.0"
 chrono    = "0.4.38"
 once_cell = "1.19.0"
+
+[features]
+custom_format = []
