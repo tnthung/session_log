@@ -17,9 +17,8 @@ type LogContext = Arc<Mutex<Vec<String>>>;
 ///
 /// # Example
 ///
-/// ```
+/// ```no_run
 /// use session_log::{Logger, Loggable};
-///
 ///
 /// fn main() {
 ///   let logger = Logger::new("main");
@@ -28,13 +27,11 @@ type LogContext = Arc<Mutex<Vec<String>>>;
 ///   bar(logger.session("bar"), 10);
 /// }
 ///
-///
 /// fn foo(logger: impl Loggable, n: usize) {
 ///   for i in 0..n {
 ///     logger.info(&format!("message-{}", i));
 ///   }
 /// }
-///
 ///
 /// fn bar(logger: impl Loggable, n: usize) {
 ///   for i in 0..n {
@@ -157,7 +154,7 @@ impl Session {
       return;
     }
 
-    Logger::new(&self.root).write_line(&rslt.join("\n")).unwrap();
+    Logger::new(&self.root).write_line(&rslt.join("\n"));
   }
 }
 

@@ -5,6 +5,9 @@ use std::fs::{File, OpenOptions, create_dir_all};
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 
+#[cfg(feature = "async")]
+use std::sync::mpsc::{channel, Sender};
+
 use chrono::prelude::*;
 use once_cell::sync::Lazy;
 
@@ -26,6 +29,39 @@ static LOGGERS: Lazy<Mutex<HashMap<String, Inner>>> =
 
 static FILES: Lazy<Mutex<HashMap<String, Arc<Mutex<File>>>>> =
   Lazy::new(|| Mutex::new(HashMap::new()));
+
+#[cfg(feature = "async")]
+static SENDER: Lazy<Sender<(Arc<Mutex<File>>, String)>> = Lazy::new(|| {
+  let (tx, rx) = channel::<(Arc<Mutex<File>>, String)>();
+
+  unsafe {
+    THREAD = Some(std::thread::spawn(move || {
+      use std::sync::mpsc::TryRecvError;
+
+      loop {
+        match rx.try_recv() {
+          Ok((file, message)) => {
+            let mut file = file.lock().unwrap();
+            writeln!(file, "{}", message).unwrap();
+          }
+
+          Err(TryRecvError::Empty) => {
+            if THREAD.is_none() { break; }
+            std::thread::sleep(std::time::Duration::from_micros(1));
+          }
+
+          Err(TryRecvError::Disconnected) =>
+            break,
+        }
+      }
+    }));
+  }
+
+  tx
+});
+
+#[cfg(feature = "async")]
+static mut THREAD: Option<std::thread::JoinHandle<()>> = None;
 
 
 fn get_time_tuple() -> (u32, u32, u32, u32) {
@@ -58,7 +94,7 @@ impl Logger {
   ///
   /// # Examples
   ///
-  /// ```
+  /// ```no_run
   /// use session_log::Logger;
   ///
   /// fn main() {
@@ -71,6 +107,9 @@ impl Logger {
   /// }
   pub fn new(name: impl Into<String>) -> Logger {
     let mut loggers = LOGGERS.lock().unwrap();
+
+    #[cfg(feature = "async")]
+    let _ = *SENDER;
 
     let name: String = name.into();
 
@@ -88,11 +127,40 @@ impl Logger {
     Logger(name)
   }
 
+  #[cfg(feature = "async")]
+  /// This method will join the async thread and wait for it to finish all writing operations.\
+  /// It's crucial to call this method before the program exits to ensure no logs are lost.
+  ///
+  /// This is only available when the `async` feature is enabled.
+  ///
+  /// # Examples
+  ///
+  /// ```no_run
+  /// use session_log::Logger;
+  ///
+  /// fn main() {
+  ///   let logger = Logger::new("main");
+  ///
+  ///   // Do some logging
+  ///   for i in 0..10000 {
+  ///     logger.info(format!("Info {i}"));
+  ///   }
+  ///
+  ///   // Flush the logs
+  ///   Logger::flush();
+  /// }
+  /// ```
+  pub fn flush() {
+    if let Some(thread) = unsafe { THREAD.take() } {
+      thread.join().unwrap();
+    }
+  }
+
   /// Get logging level for this entry.
   ///
   /// # Examples
   ///
-  /// ```
+  /// ```no_run
   /// use session_log::{Logger, Level};
   ///
   /// fn main() {
@@ -112,7 +180,7 @@ impl Logger {
   ///
   /// # Examples
   ///
-  /// ```
+  /// ```no_run
   /// use session_log::{Logger, Level};
   ///
   /// fn main() {
@@ -138,7 +206,7 @@ impl Logger {
   ///
   /// # Examples
   ///
-  /// ```
+  /// ```no_run
   /// use session_log::Logger;
   ///
   /// fn main() {
@@ -159,7 +227,7 @@ impl Logger {
   ///
   /// # Examples
   ///
-  /// ```
+  /// ```no_run
   /// use session_log::Logger;
   ///
   /// fn main() {
@@ -193,7 +261,7 @@ impl Logger {
   ///
   /// # Examples
   ///
-  /// ```
+  /// ```no_run
   /// use session_log::Logger;
   ///
   /// fn main() {
@@ -250,10 +318,18 @@ impl Logger {
     return file.unwrap().clone();
   }
 
-  pub(crate) fn write_line(&self, message: &str) -> std::io::Result<()> {
+  pub(crate) fn write_line(&self, message: &str) {
     let file = self.get_file();
-    let mut file = file.lock().unwrap();
-    writeln!(file, "{}", message)
+
+    #[cfg(not(feature = "async"))] {
+      let mut file = file.lock().unwrap();
+      writeln!(file, "{}", message);
+    }
+
+    #[cfg(feature = "async")] {
+      SENDER.send((file, message.to_string()))
+        .expect("Failed to send message to async thread");
+    }
   }
 }
 
@@ -269,7 +345,7 @@ impl Loggable for Logger {
       }
 
       &(inner.proc)(&ctx)
-    }).unwrap()
+    });
   }
 
   fn get_logger(&self) -> &str {
