@@ -168,7 +168,7 @@ impl Loggable for Session {
       if level < &logger.get_level() { return; }
     }
 
-    let message = (logger.get_proc())(&ctx);
+    let message = (logger.get_processor())(&ctx);
     self.msgs.lock().unwrap().push(message);
   }
 

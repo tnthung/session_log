@@ -17,10 +17,10 @@ pub struct Logger(String);
 
 
 struct Inner {
-  lvl : Level,
-  hr  : u32,
-  dir : String,
-  proc: Arc<fn(&Context) -> String>
+  level    : Level,
+  hour     : u32,
+  dir      : String,
+  processor: Arc<fn(&Context) -> String>
 }
 
 
@@ -117,10 +117,10 @@ impl Logger {
 
     if let None = inner {
       loggers.insert(name.clone(), Inner {
-        lvl : Level::Info,
-        dir : "logs".to_string(),
-        hr  : Local::now().hour(),
-        proc: Arc::new(crate::context::processor),
+        level    : Level::Info,
+        dir      : "logs".to_string(),
+        hour     : Local::now().hour(),
+        processor: Arc::new(crate::context::processor),
       });
     }
 
@@ -173,7 +173,7 @@ impl Logger {
     let loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get(&self.0).unwrap();
 
-    inner.lvl
+    inner.level
   }
 
   /// Set logging level for this entry
@@ -197,7 +197,7 @@ impl Logger {
     let mut loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get_mut(&self.0).unwrap();
 
-    inner.lvl = level;
+    inner.level = level;
 
     self
   }
@@ -250,11 +250,11 @@ impl Logger {
     Ok(self)
   }
 
-  pub(crate) fn get_proc(&self) -> Arc<fn(&Context) -> String> {
+  pub(crate) fn get_processor(&self) -> Arc<fn(&Context) -> String> {
     let loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get(&self.0).unwrap();
 
-    inner.proc.clone()
+    inner.processor.clone()
   }
 
   /// Set the processor for this entry.
@@ -274,11 +274,11 @@ impl Logger {
   ///     });
   /// }
   /// ```
-  pub fn set_proc(self, proc: fn(&Context) -> String) -> Self {
+  pub fn set_processor(self, proc: fn(&Context) -> String) -> Self {
     let mut loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get_mut(&self.0).unwrap();
 
-    inner.proc = Arc::new(proc);
+    inner.processor = Arc::new(proc);
 
     self
   }
@@ -296,7 +296,7 @@ impl Logger {
 
     let inner = loggers.get_mut(&self.0).unwrap();
 
-    let hr   = &mut inner.hr;
+    let hr   = &mut inner.hour;
     let dir  = &inner.dir;
     let now  = get_time_tuple();
     let file = files.get(dir).clone();
@@ -340,11 +340,11 @@ impl Loggable for Logger {
       let loggers = LOGGERS.lock().unwrap();
       let inner   = loggers.get(&self.0).unwrap();
 
-      if *ctx.get_level().unwrap() < inner.lvl {
+      if *ctx.get_level().unwrap() < inner.level {
         return;
       }
 
-      &(inner.proc)(&ctx)
+      &(inner.processor)(&ctx)
     });
   }
 
