@@ -234,17 +234,13 @@ impl Logger {
     let file = files.get(dir).clone();
 
     if file.is_none() || now.3 != *hr {
-      let file_name = get_file_name(now.0, now.1, now.2, now.3);
-      let file_path = format!("{}/{}", dir, file_name);
-
+      let name = get_file_name(now.0, now.1, now.2, now.3);
+      let path = format!("{dir}/{name}");
       let file = Arc::new(Mutex::new(OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&file_path)
-        .unwrap()));
+        .create(true).append(true).open(&path).unwrap()));
 
       files.insert(
-        dir.clone(),
+        dir .clone(),
         file.clone());
       *hr = now.3;
 

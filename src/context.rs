@@ -141,22 +141,22 @@ pub fn processor(ctx: &Context) -> String {
       println!("{time} {level:#} {name} - {loc} - {message}");
 
       if session.is_none() {
-        format! ("{time} {level} {name} - {loc} - {message}")
+        format!("{time} {level} {name} - {loc} - {message}")
       }
 
       else {
-        format! ("{time} {level} {loc} - {message}")
+        format!("{time} {level} {loc} - {message}")
       }
     }
 
     Context::SessionStart { .. } => {
-      println!("{time}     {name} - {loc} - Session started");
-      format! ("{time}     {loc} - Session started: ")
+      println!("{time}     {name} - {loc} - Session start");
+      format! ("{time}     {loc} - Session start")
     }
 
     Context::SessionEnd { .. } => {
-      println!("{time}     {name} - Session ended");
-      format! ("{time}     {loc} - Session ended")
+      println!("{time}     {name} - {loc} - Session end");
+      format! ("{time}     {loc} - Session end")
     }
   }
 }
