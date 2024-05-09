@@ -323,7 +323,7 @@ impl Logger {
 
     #[cfg(not(feature = "async"))] {
       let mut file = file.lock().unwrap();
-      writeln!(file, "{}", message);
+      writeln!(file, "{message}").unwrap();
     }
 
     #[cfg(feature = "async")] {
