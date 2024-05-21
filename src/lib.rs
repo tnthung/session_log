@@ -4,6 +4,7 @@ mod loggable;
 mod logger;
 mod session;
 mod context;
+mod r#macro;
 
 
 pub use error   ::*;
@@ -12,6 +13,7 @@ pub use loggable::Loggable;
 pub use logger  ::Logger;
 pub use session ::Session;
 pub use context ::*;
+pub use r#macro ::*;
 
 
 /// Re-export the most basic requirement to use the library.
