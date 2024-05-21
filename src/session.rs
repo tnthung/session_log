@@ -137,10 +137,10 @@ impl Session {
 
     for msg in msgs.iter() {
       for line in msg.lines() {
-        let is_border  = line.starts_with("┏") || line.starts_with("┗");
-        let is_content = line.starts_with("┃");
+        let is_border = line.starts_with("┏") || line.starts_with("┗");
+        let is_nested = line.starts_with("┃") || is_border;
 
-        let space = if is_border || is_content { "" } else { " " };
+        let space = if is_nested { ""                    } else { " "  };
         let line  = if is_border { &line[..line.len()-3] } else { line };
 
         rslt.push(format!("┃{space}{line}"));
