@@ -22,6 +22,7 @@ pub use r#macro ::*;
 /// - `session_log::logger::Logger`
 /// - `session_log::macro::*`
 pub mod prelude {
+  pub use crate::r#macro ::*;
   pub use crate::logger  ::Logger;
   pub use crate::loggable::Loggable;
 }
