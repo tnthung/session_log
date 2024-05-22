@@ -41,6 +41,7 @@ type LogContext = Arc<Mutex<Vec<String>>>;
 /// ```
 pub struct Session {
   died: bool,
+  pass: bool,
   name: String,
   root: String,
   msgs: LogContext,
@@ -59,6 +60,7 @@ impl Session {
 
     let ses = Session {
       died: false,
+      pass: false,
       name: name.to_string(),
       root: logger.to_string(),
       time,
@@ -94,6 +96,7 @@ impl Session {
 
     let ses = Session {
       died: false,
+      pass: false,
       name: name.to_string(),
       root: self.root.clone(),
       time,
@@ -112,6 +115,16 @@ impl Session {
     });
 
     Ok(ses)
+  }
+
+  /// Re-enable the session so it can log messages again.
+  pub fn enable(&mut self) {
+    self.pass = false;
+  }
+
+  /// Temporarily disable the session so it will not log messages.
+  pub fn disable(&mut self) {
+    self.pass = true;
   }
 
   pub(self) fn dump(&mut self) {
@@ -162,6 +175,7 @@ impl Session {
 impl Loggable for Session {
   fn log(&self, ctx: crate::Context) {
     if self.died { return; }
+    if self.pass { return; }
 
     let logger = Logger::new(&self.root);
     if let Some(level) = ctx.get_level() {
