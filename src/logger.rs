@@ -240,14 +240,13 @@ impl Logger {
   ///   assert_eq!(logger.get_directory(), "logs/other");
   /// }
   /// ```
-  pub fn set_directory(self, directory: impl Into<String>) -> std::io::Result<Self> {
+  pub fn set_directory(self, directory: impl Into<String>) -> Self {
     let mut loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get_mut(&self.0).unwrap();
 
     inner.dir = directory.into();
-    create_dir_all(&inner.dir)?;
 
-    Ok(self)
+    self
   }
 
   pub(crate) fn get_processor(&self) -> Arc<fn(&Context) -> String> {
@@ -302,6 +301,8 @@ impl Logger {
     let file = files.get(dir).clone();
 
     if file.is_none() || now.3 != *hr {
+      create_dir_all(dir).unwrap();
+
       let name = get_file_name(now.0, now.1, now.2, now.3);
       let path = format!("{dir}/{name}");
       let file = Arc::new(Mutex::new(OpenOptions::new()
