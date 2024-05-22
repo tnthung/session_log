@@ -63,6 +63,10 @@ static SENDER: Lazy<Sender<(Arc<Mutex<File>>, String)>> = Lazy::new(|| {
 #[cfg(feature = "async")]
 static mut THREAD: Option<std::thread::JoinHandle<()>> = None;
 
+static mut DEFAULT_PATH : Lazy<String> = Lazy::new(|| "./logs".to_string());
+static mut DEFAULT_LEVEL: Level = Level::Info;
+static mut DEFAULT_PROC : fn(&Context) -> String = crate::context::processor;
+
 
 fn get_time_tuple() -> (u32, u32, u32, u32) {
   let now = Local::now();
@@ -117,14 +121,54 @@ impl Logger {
 
     if let None = inner {
       loggers.insert(name.clone(), Inner {
-        level    : Level::Info,
-        dir      : "logs".to_string(),
+        level    : unsafe { DEFAULT_LEVEL },
+        dir      : unsafe { DEFAULT_PATH.clone() },
         hour     : Local::now().hour(),
-        processor: Arc::new(crate::context::processor),
+        processor: Arc::new(unsafe { DEFAULT_PROC }),
       });
     }
 
     Logger(name)
+  }
+
+  /// Set the default logging directory for all new logging entries.
+  /// The directory will be created if it doesn't exist.
+  /// Old loggers will not be affected by this change.
+  ///
+  /// The default directory is `./logs`.
+  pub fn set_default_directory(directory: impl Into<String>) {
+    unsafe { *DEFAULT_PATH = directory.into(); };
+  }
+
+  /// Get the default logging directory for all new logging entries.
+  pub fn get_default_directory() -> String {
+    unsafe { DEFAULT_PATH.clone() }
+  }
+
+  /// Set the default logging level for all new logging entries.
+  /// Old loggers will not be affected by this change.
+  ///
+  /// The default level is `Info`.
+  pub fn set_default_level(level: Level) {
+    unsafe { DEFAULT_LEVEL = level; };
+  }
+
+  /// Get the default logging level for all new logging entries.
+  pub fn get_default_level() -> Level {
+    unsafe { DEFAULT_LEVEL }
+  }
+
+  /// Set the default processor for all new logging entries.
+  /// Old loggers will not be affected by this change.
+  ///
+  /// The default processor is `$crate::context::processor`.
+  pub fn set_default_processor(proc: fn(&Context) -> String) {
+    unsafe { DEFAULT_PROC = proc; };
+  }
+
+  /// Get the default processor for all new logging entries.
+  pub fn get_default_processor() -> fn(&Context) -> String {
+    unsafe { DEFAULT_PROC }
   }
 
   #[cfg(feature = "async")]
