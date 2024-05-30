@@ -53,16 +53,17 @@ pub struct Session {
 
 
 impl Session {
-  pub(crate) fn new(name: &str, logger: &str, file: &'static str, line: u32) -> Session {
+  pub(crate) fn new(name: impl Into<String>, logger: &str, file: &'static str, line: u32) -> Session {
     let msgs = Arc::new(Mutex::new(Vec::new()));
     let sire = None;
     let time = Local::now();
+    let name = name.into();
 
     let ses = Session {
       died: false,
       pass: false,
-      name: name.to_string(),
       root: logger.to_string(),
+      name: name.clone(),
       time,
       msgs,
       sire,
@@ -75,46 +76,10 @@ impl Session {
       file,
       line,
       logger,
-      session: name,
+      session: &name,
     });
 
     ses
-  }
-
-  /// Create a nested session under the current session.
-  #[track_caller]
-  pub fn session(&self, name: &str) -> Result<Session, SessionErrorKind> {
-    if self.died { return Err(SessionErrorKind::SessionDied); }
-
-    let msgs = Arc::new(Mutex::new(Vec::new()));
-    let sire = Some(self.msgs.clone());
-    let time = Local::now();
-
-    let loc  = std::panic::Location::caller();
-    let file = loc.file();
-    let line = loc.line();
-
-    let ses = Session {
-      died: false,
-      pass: false,
-      name: name.to_string(),
-      root: self.root.clone(),
-      time,
-      msgs,
-      sire,
-      file,
-      line,
-    };
-
-    ses.log(Context::SessionStart {
-      time,
-      file,
-      line,
-      logger : &self.root,
-      session: &self.name,
-    });
-
-    Ok(ses)
   }
 
   /// Re-enable the session so it can log messages again.
@@ -184,6 +149,41 @@ impl Loggable for Session {
 
     let message = (logger.get_processor())(&ctx);
     self.msgs.lock().unwrap().push(message);
+  }
+
+  #[track_caller]
+  fn session(&self, name: impl Into<String>) -> Session {
+    if self.died { unreachable!("This should not be happened") }
+
+    let msgs = Arc::new(Mutex::new(Vec::new()));
+    let sire = Some(self.msgs.clone());
+    let time = Local::now();
+
+    let loc  = std::panic::Location::caller();
+    let file = loc.file();
+    let line = loc.line();
+
+    let ses = Session {
+      died: false,
+      pass: false,
+      name: name.into(),
+      root: self.root.clone(),
+      time,
+      msgs,
+      sire,
+      file,
+      line,
+    };
+
+    ses.log(Context::SessionStart {
+      time,
+      file,
+      line,
+      logger : &self.root,
+      session: &self.name,
+    });
+
+    ses
   }
 
   fn get_logger(&self) -> &str {

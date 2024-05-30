@@ -6,6 +6,9 @@ pub trait Loggable {
   /// Log a message with the dynamic level.
   fn log(&self, ctx: crate::Context);
 
+  /// Create a new session with the given name.
+  fn session(&self, name: impl Into<String>) -> Session;
+
   /// Get the current logging entry name.
   fn get_logger(&self) -> &str;
 

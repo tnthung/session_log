@@ -326,13 +326,6 @@ impl Logger {
     self
   }
 
-  /// Create a new session with the given name under this logging entry.
-  #[track_caller]
-  pub fn session(&self, name: &str) -> Session {
-    let loc = std::panic::Location::caller();
-    Session::new(name, &self.0, loc.file(), loc.line())
-  }
-
   fn get_file(&self) -> Arc<Mutex<File>> {
     let mut loggers = LOGGERS.lock().unwrap();
     let mut files   = FILES  .lock().unwrap();
@@ -391,6 +384,12 @@ impl Loggable for Logger {
 
       &(inner.processor)(&ctx)
     });
+  }
+
+  #[track_caller]
+  fn session(&self, name: impl Into<String>) -> Session {
+    let loc = std::panic::Location::caller();
+    Session::new(name, &self.0, loc.file(), loc.line())
   }
 
   fn get_logger(&self) -> &str {
