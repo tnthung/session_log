@@ -102,15 +102,9 @@ impl Session {
 
     rslt.reserve(7 + msgs.len());
 
-    println!("{} {:#} {}:{} - Session ended",
-      time.to_rfc3339_opts(SecondsFormat::Micros, true),
-      Level::Info,
-      self.root,
-      self.name);
-
     rslt.push(format!("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
     rslt.push(format!("┃ Session: {}", self.name));
-    rslt.push(format!("┃ Elapsed: {}us", (time - self.time).num_microseconds().unwrap()));
+    rslt.push(format!("┃ Elapsed: {}us", time.signed_duration_since(self.time).num_milliseconds()));
     rslt.push(format!("┃"));
 
     for msg in msgs.iter() {
@@ -200,8 +194,8 @@ impl Drop for Session {
   fn drop(&mut self) {
     self.log(Context::SessionEnd {
       time   : Local::now(),
-      file   : self.file,
-      line   : self.line,
+      file   :  self.file,
+      line   :  self.line,
       logger : &self.root,
       session: &self.name,
     });

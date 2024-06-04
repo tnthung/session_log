@@ -154,8 +154,9 @@ pub fn processor(ctx: &Context) -> String {
       format! ("{time}     {loc} - Session start")
     }
 
-    Context::SessionEnd { .. } => {
-      println!("{time}     {name} - {loc} - Session end");
+    Context::SessionEnd { time, .. } => {
+      let duration = Local::now().signed_duration_since(*time).num_milliseconds();
+      println!("{time}     {name} - {loc} - Session end, Elapsed: {duration}ms");
       format! ("{time}     {loc} - Session end")
     }
   }
