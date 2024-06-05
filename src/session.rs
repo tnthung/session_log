@@ -104,7 +104,7 @@ impl Session {
 
     rslt.push(format!("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
     rslt.push(format!("┃ Session: {}", self.name));
-    rslt.push(format!("┃ Elapsed: {}us", time.signed_duration_since(self.time).num_milliseconds()));
+    rslt.push(format!("┃ Elapsed: {}us", (time - self.time).num_microseconds().unwrap()));
     rslt.push(format!("┃"));
 
     for msg in msgs.iter() {
