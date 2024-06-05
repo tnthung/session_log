@@ -28,6 +28,7 @@ pub enum Context<'a> {
   /// End of a session. Occurs when a logger session is destructed.
   SessionEnd {
     time   : DateTime<Local>,
+    elapsed: i64,
     file   : &'static str,
     line   : u32,
     logger : &'a str,
@@ -154,9 +155,8 @@ pub fn processor(ctx: &Context) -> String {
       format! ("{time}     {loc} - Session start")
     }
 
-    Context::SessionEnd { time: ctx_time, .. } => {
-      let duration = (Local::now() - ctx_time).num_microseconds().unwrap();
-      println!("{time}     {name} - {loc} - Session end, Elapsed: {duration}us");
+    Context::SessionEnd { elapsed, .. } => {
+      println!("{time}     {name} - {loc} - Session end, Elapsed: {elapsed}us");
       format! ("{time}     {loc} - Session end")
     }
   }

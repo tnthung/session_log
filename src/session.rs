@@ -92,19 +92,18 @@ impl Session {
     self.pass = true;
   }
 
-  pub(self) fn dump(&mut self) {
+  pub(self) fn dump(&mut self, elapsed: i64) {
     if self.died { return; }
     self.died = true;
 
     let mut rslt = Vec::new();
-    let     time = Local::now();
     let     msgs = self.msgs.lock().unwrap();
 
     rslt.reserve(7 + msgs.len());
 
     rslt.push(format!("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
     rslt.push(format!("┃ Session: {}", self.name));
-    rslt.push(format!("┃ Elapsed: {}us", (time - self.time).num_microseconds().unwrap()));
+    rslt.push(format!("┃ Elapsed: {elapsed}us"));
     rslt.push(format!("┃"));
 
     for msg in msgs.iter() {
@@ -192,14 +191,19 @@ impl Loggable for Session {
 
 impl Drop for Session {
   fn drop(&mut self) {
+    let current = Local::now();
+    let elapsed = (current - self.time)
+      .num_microseconds().unwrap();
+
     self.log(Context::SessionEnd {
-      time   : Local::now(),
+      time   :  current,
       file   :  self.file,
       line   :  self.line,
       logger : &self.root,
       session: &self.name,
+      elapsed,
     });
 
-    self.dump();
+    self.dump(elapsed);
   }
 }
