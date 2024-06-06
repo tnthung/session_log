@@ -179,8 +179,16 @@ impl Loggable for Session {
     ses
   }
 
-  fn get_logger(&self) -> &str {
+  fn get_name(&self) -> &str {
+    &self.name
+  }
+
+  fn get_logger_name(&self) -> &str {
     &self.root
+  }
+
+  fn get_logger(&self) -> Logger {
+    Logger::new(&self.root)
   }
 
   fn get_session(&self) -> Option<&str> {

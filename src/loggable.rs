@@ -9,11 +9,22 @@ pub trait Loggable {
   /// Create a new session with the given name.
   fn session(&self, name: impl Into<String>) -> Session;
 
+  /// Get the name of the current loggable.
+  fn get_name(&self) -> &str;
+
   /// Get the current logging entry name.
-  fn get_logger(&self) -> &str;
+  fn get_logger_name(&self) -> &str;
+
+  /// Get the logger of the current loggable.
+  fn get_logger(&self) -> Logger;
 
   /// Get the current session name.
   fn get_session(&self) -> Option<&str>;
+
+  /// Get the current loggable level.
+  fn get_level(&self) -> Level {
+    self.get_logger().get_level()
+  }
 
   /// Log a message at the debug level with caller position.
   #[track_caller]
@@ -25,7 +36,7 @@ pub trait Loggable {
       level  : Level::Debug,
       file   : loc.file(),
       line   : loc.line(),
-      logger : self.get_logger (),
+      logger : self.get_logger_name(),
       session: self.get_session(),
       message: &message.into(),
     });
@@ -41,7 +52,7 @@ pub trait Loggable {
       level  : Level::Verbose,
       file   : loc.file(),
       line   : loc.line(),
-      logger : self.get_logger (),
+      logger : self.get_logger_name(),
       session: self.get_session(),
       message: &message.into(),
     });
@@ -57,7 +68,7 @@ pub trait Loggable {
       level  : Level::Info,
       file   : loc.file(),
       line   : loc.line(),
-      logger : self.get_logger (),
+      logger : self.get_logger_name(),
       session: self.get_session(),
       message: &message.into(),
     });
@@ -73,7 +84,7 @@ pub trait Loggable {
       level  : Level::Warning,
       file   : loc.file(),
       line   : loc.line(),
-      logger : self.get_logger (),
+      logger : self.get_logger_name(),
       session: self.get_session(),
       message: &message.into(),
     });
@@ -89,7 +100,7 @@ pub trait Loggable {
       level  : Level::Critical,
       file   : loc.file(),
       line   : loc.line(),
-      logger : self.get_logger (),
+      logger : self.get_logger_name(),
       session: self.get_session(),
       message: &message.into(),
     });
@@ -105,7 +116,7 @@ pub trait Loggable {
       level  : Level::Error,
       file   : loc.file(),
       line   : loc.line(),
-      logger : self.get_logger (),
+      logger : self.get_logger_name(),
       session: self.get_session(),
       message: &message.into(),
     });
@@ -125,7 +136,7 @@ pub trait Loggable {
       level  : Level::Fatal,
       file   : loc.file(),
       line   : loc.line(),
-      logger : self.get_logger (),
+      logger : self.get_logger_name(),
       session: self.get_session(),
       message: &message,
     });

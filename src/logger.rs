@@ -392,8 +392,16 @@ impl Loggable for Logger {
     Session::new(name, &self.0, loc.file(), loc.line())
   }
 
-  fn get_logger(&self) -> &str {
+  fn get_name(&self) -> &str {
     &self.0
+  }
+
+  fn get_logger_name(&self) -> &str {
+    &self.0
+  }
+
+  fn get_logger(&self) -> Logger {
+    self.clone()
   }
 
   fn get_session(&self) -> Option<&str> {
