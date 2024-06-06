@@ -195,7 +195,7 @@ impl Loggable for Session {
   }
 
   fn get_logger(&self) -> Logger {
-    Logger::new(&self.root)
+    Logger(self.root.clone())
   }
 
   fn get_session(&self) -> Option<&str> {

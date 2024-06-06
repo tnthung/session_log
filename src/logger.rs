@@ -13,7 +13,7 @@ use once_cell::sync::Lazy;
 
 
 #[derive(Debug, Clone)]
-pub struct Logger(String);
+pub struct Logger(pub(crate) String);
 
 
 struct Inner {
