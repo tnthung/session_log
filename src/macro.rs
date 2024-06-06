@@ -6,7 +6,9 @@
 macro_rules! log_debug {
   ($logger:expr, $($t:tt)*) => {{
     use $crate::prelude::*;
-    $logger.debug(&format!($($t)*));
+    if $logger.get_level() <= Level::Debug {
+      $logger.debug(&format!($($t)*));
+    }
   }};
 }
 
@@ -16,7 +18,9 @@ macro_rules! log_debug {
 macro_rules! log_verbose {
   ($logger:expr, $($t:tt)*) => {{
     use $crate::prelude::*;
-    $logger.verbose(&format!($($t)*));
+    if $logger.get_level() <= Level::Verbose {
+      $logger.verbose(&format!($($t)*));
+    }
   }};
 }
 
@@ -26,7 +30,9 @@ macro_rules! log_verbose {
 macro_rules! log_info {
   ($logger:expr, $($t:tt)*) => {{
     use $crate::prelude::*;
-    $logger.info(&format!($($t)*));
+    if $logger.get_level() <= Level::Info {
+      $logger.info(&format!($($t)*));
+    }
   }};
 }
 
@@ -36,7 +42,9 @@ macro_rules! log_info {
 macro_rules! log_warning {
   ($logger:expr, $($t:tt)*) => {{
     use $crate::prelude::*;
-    $logger.warning(&format!($($t)*));
+    if $logger.get_level() <= Level::Warning {
+      $logger.warning(&format!($($t)*));
+    }
   }};
 }
 
@@ -46,7 +54,9 @@ macro_rules! log_warning {
 macro_rules! log_critical {
   ($logger:expr, $($t:tt)*) => {{
     use $crate::prelude::*;
-    $logger.critical(&format!($($t)*));
+    if $logger.get_level() <= Level::Critical {
+      $logger.critical(&format!($($t)*));
+    }
   }};
 }
 
@@ -56,7 +66,9 @@ macro_rules! log_critical {
 macro_rules! log_error {
   ($logger:expr, $($t:tt)*) => {{
     use $crate::prelude::*;
-    $logger.error(&format!($($t)*));
+    if $logger.get_level() <= Level::Error {
+      $logger.error(&format!($($t)*));
+    }
   }};
 }
 
@@ -66,6 +78,8 @@ macro_rules! log_error {
 macro_rules! log_fatal {
   ($logger:expr, $($t:tt)*) => {{
     use $crate::prelude::*;
-    $logger.fatal(&format!($($t)*));
+    if $logger.get_level() <= Level::Fatal {
+      $logger.fatal(&format!($($t)*));
+    }
   }};
 }
