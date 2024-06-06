@@ -17,10 +17,11 @@ pub struct Logger(String);
 
 
 struct Inner {
-  level    : Level,
+  wrt_level: Level,
+  log_level: Level,
   hour     : u32,
   dir      : String,
-  processor: Arc<fn(&Context) -> String>
+  processor: Arc<ContextProcessor>
 }
 
 
@@ -63,9 +64,10 @@ static SENDER: Lazy<Sender<(Arc<Mutex<File>>, String)>> = Lazy::new(|| {
 #[cfg(feature = "async")]
 static mut THREAD: Option<std::thread::JoinHandle<()>> = None;
 
-static mut DEFAULT_PATH : Lazy<String> = Lazy::new(|| "./logs".to_string());
-static mut DEFAULT_LEVEL: Level = Level::Info;
-static mut DEFAULT_PROC : fn(&Context) -> String = crate::context::processor;
+static mut DEFAULT_PATH     : Lazy<String>     = Lazy::new(|| "./logs".to_string());
+static mut DEFAULT_PROC     : ContextProcessor = crate::context::processor;
+static mut DEFAULT_WRT_LEVEL: Level            = Level::Verbose;
+static mut DEFAULT_LOG_LEVEL: Level            = Level::Info;
 
 
 fn get_time_tuple() -> (u32, u32, u32, u32) {
@@ -106,7 +108,7 @@ impl Logger {
   ///   let logger2 = Logger::new("main"); // Retrieve the existing logger
   ///
   ///   let logger3 = Logger::new("main")
-  ///     .set_level(session_log::Level::Debug);
+  ///     .set_log_level(session_log::Level::Debug);
   ///     .set_directory("logs/main");
   /// }
   pub fn new(name: impl Into<String>) -> Logger {
@@ -121,7 +123,8 @@ impl Logger {
 
     if let None = inner {
       loggers.insert(name.clone(), Inner {
-        level    : unsafe { DEFAULT_LEVEL },
+        wrt_level: unsafe { DEFAULT_WRT_LEVEL },
+        log_level: unsafe { DEFAULT_LOG_LEVEL },
         dir      : unsafe { DEFAULT_PATH.clone() },
         hour     : Local::now().hour(),
         processor: Arc::new(unsafe { DEFAULT_PROC }),
@@ -145,29 +148,42 @@ impl Logger {
     unsafe { DEFAULT_PATH.clone() }
   }
 
+  /// Set the default writing level for all new writing entries.
+  /// Old loggers will not be affected by this change.
+  ///
+  /// The default writing level is `Verbose`.
+  pub fn set_default_write_level(level: Level) {
+    unsafe { DEFAULT_WRT_LEVEL = level; };
+  }
+
+  /// Get the default writing level for all new writing entries.
+  pub fn get_default_write_level() -> Level {
+    unsafe { DEFAULT_WRT_LEVEL }
+  }
+
   /// Set the default logging level for all new logging entries.
   /// Old loggers will not be affected by this change.
   ///
-  /// The default level is `Info`.
-  pub fn set_default_level(level: Level) {
-    unsafe { DEFAULT_LEVEL = level; };
+  /// The default logging level is `Info`.
+  pub fn set_default_log_level(level: Level) {
+    unsafe { DEFAULT_LOG_LEVEL = level; };
   }
 
   /// Get the default logging level for all new logging entries.
-  pub fn get_default_level() -> Level {
-    unsafe { DEFAULT_LEVEL }
+  pub fn get_default_log_level() -> Level {
+    unsafe { DEFAULT_LOG_LEVEL }
   }
 
   /// Set the default processor for all new logging entries.
   /// Old loggers will not be affected by this change.
   ///
   /// The default processor is `$crate::context::processor`.
-  pub fn set_default_processor(proc: fn(&Context) -> String) {
+  pub fn set_default_processor(proc: fn(&Context) -> (String, String)) {
     unsafe { DEFAULT_PROC = proc; };
   }
 
   /// Get the default processor for all new logging entries.
-  pub fn get_default_processor() -> fn(&Context) -> String {
+  pub fn get_default_processor() -> fn(&Context) -> (String, String) {
     unsafe { DEFAULT_PROC }
   }
 
@@ -200,6 +216,52 @@ impl Logger {
     }
   }
 
+  /// Get writing level for this entry.
+  ///
+  /// # Examples
+  ///
+  /// ```no_run
+  /// use session_log::{Logger, Level};
+  ///
+  /// fn main() {
+  ///   let logger = Logger::new("main");
+  ///
+  ///   assert_eq!(logger.get_write_level(), Level::Info);
+  /// }
+  /// ```
+  pub fn get_write_level(&self) -> Level {
+    let loggers = LOGGERS.lock().unwrap();
+    let inner = loggers.get(&self.0).unwrap();
+
+    inner.wrt_level
+  }
+
+  /// Set writing level for this entry
+  ///
+  /// # Examples
+  ///
+  /// ```no_run
+  /// use session_log::{Logger, Level};
+  ///
+  /// fn main() {
+  ///   let mut logger = Logger::new("main");
+  ///
+  ///   logger = logger.set_write_level(Level::Debug);
+  ///   assert_eq!(logger.get_write_level(), Level::Debug);
+  ///
+  ///   logger = logger.set_write_level(Level::Info);
+  ///   assert_eq!(logger.get_write_level(), Level::Info);
+  /// }
+  /// ```
+  pub fn set_write_level(self, level: Level) -> Self {
+    let mut loggers = LOGGERS.lock().unwrap();
+    let inner = loggers.get_mut(&self.0).unwrap();
+
+    inner.wrt_level = level;
+
+    self
+  }
+
   /// Get logging level for this entry.
   ///
   /// # Examples
@@ -210,14 +272,14 @@ impl Logger {
   /// fn main() {
   ///   let logger = Logger::new("main");
   ///
-  ///   assert_eq!(logger.get_level(), Level::Info);
+  ///   assert_eq!(logger.get_log_level(), Level::Info);
   /// }
   /// ```
-  pub fn get_level(&self) -> Level {
+  pub fn get_log_level(&self) -> Level {
     let loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get(&self.0).unwrap();
 
-    inner.level
+    inner.log_level
   }
 
   /// Set logging level for this entry
@@ -230,18 +292,18 @@ impl Logger {
   /// fn main() {
   ///   let mut logger = Logger::new("main");
   ///
-  ///   logger = logger.set_level(Level::Debug);
-  ///   assert_eq!(logger.get_level(), Level::Debug);
+  ///   logger = logger.set_log_level(Level::Debug);
+  ///   assert_eq!(logger.get_log_level(), Level::Debug);
   ///
-  ///   logger = logger.set_level(Level::Info);
-  ///   assert_eq!(logger.get_level(), Level::Info);
+  ///   logger = logger.set_log_level(Level::Info);
+  ///   assert_eq!(logger.get_log_level(), Level::Info);
   /// }
   /// ```
-  pub fn set_level(self, level: Level) -> Self {
+  pub fn set_log_level(self, level: Level) -> Self {
     let mut loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get_mut(&self.0).unwrap();
 
-    inner.level = level;
+    inner.log_level = level;
 
     self
   }
@@ -293,7 +355,7 @@ impl Logger {
     self
   }
 
-  pub(crate) fn get_processor(&self) -> Arc<fn(&Context) -> String> {
+  pub(crate) fn get_processor(&self) -> Arc<fn(&Context) -> (String, String)> {
     let loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get(&self.0).unwrap();
 
@@ -309,15 +371,15 @@ impl Logger {
   ///
   /// fn main() {
   ///   let logger = Logger::new("main")
-  ///     .set_proc(|ctx| {
-  ///        println!("{:?}", ctx);
-  ///
-  ///       // The file will always be written with "Hello"
-  ///       "Hello".to_string()
-  ///     });
+  ///     .set_proc(|ctx| (
+  ///       // The console will always print "Hello"
+  ///       "Hello".to_string(),
+  ///       // The file will always write "World"
+  ///       "World".to_string()
+  ///     ));
   /// }
   /// ```
-  pub fn set_processor(self, proc: fn(&Context) -> String) -> Self {
+  pub fn set_processor(self, proc: fn(&Context) -> (String, String)) -> Self {
     let mut loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get_mut(&self.0).unwrap();
 
@@ -374,16 +436,23 @@ impl Logger {
 
 impl Loggable for Logger {
   fn log(&self, ctx: crate::Context) {
-    self.write_line({
-      let loggers = LOGGERS.lock().unwrap();
-      let inner   = loggers.get(&self.0).unwrap();
+    let loggers = LOGGERS.lock().unwrap();
+    let inner   = loggers.get(&self.0).unwrap();
 
-      if *ctx.get_level().unwrap() < inner.level {
-        return;
-      }
+    let (l, f) = (inner.processor)(&ctx);
 
-      &(inner.processor)(&ctx)
-    });
+    let log_level = inner.log_level;
+    let wrt_level = inner.wrt_level;
+
+    drop(loggers);
+
+    if log_level <= *ctx.get_level().unwrap() {
+      println!("{}", l);
+    }
+
+    if wrt_level <= *ctx.get_level().unwrap() {
+      self.write_line(&f);
+    }
   }
 
   #[track_caller]

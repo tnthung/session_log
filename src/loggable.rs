@@ -21,9 +21,14 @@ pub trait Loggable {
   /// Get the current session name.
   fn get_session(&self) -> Option<&str>;
 
-  /// Get the current loggable level.
-  fn get_level(&self) -> Level {
-    self.get_logger().get_level()
+  /// Get the log level of current loggable.
+  fn get_log_level(&self) -> Level {
+    self.get_logger().get_log_level()
+  }
+
+  /// Get the write level of current loggable.
+  fn get_write_level(&self) -> Level {
+    self.get_logger().get_write_level()
   }
 
   /// Log a message at the debug level with caller position.

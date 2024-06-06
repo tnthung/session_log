@@ -37,7 +37,7 @@ pub enum Context<'a> {
 }
 
 
-pub type ContextProcessor = fn(&Context) -> String;
+pub type ContextProcessor = fn(&Context) -> (String, String);
 
 
 impl Context<'_> {
@@ -132,32 +132,30 @@ impl Context<'_> {
 
 
 /// The default processor for outputting to the console and returning the formatted string.
-pub fn processor(ctx: &Context) -> String {
+pub fn processor(ctx: &Context) -> (String, String) {
   let time = ctx.get_time_str();
   let name = ctx.get_name();
   let loc  = ctx.get_location_str();
 
   match ctx {
-    Context::Log { level, message, session, .. } => {
-      println!("{time} {level:#} {name} - {loc} - {message}");
+    Context::Log { level, message, session, .. } if session.is_none() => (
+      format!("{time} {level:#} {name} - {loc} - {message}"),
+      format!("{time} {level} {name} - {loc} - {message}")
+    ),
 
-      if session.is_none() {
-        format!("{time} {level} {name} - {loc} - {message}")
-      }
+    Context::Log { level, message, .. } => (
+      format!("{time} {level:#} {name} - {loc} - {message}"),
+      format!("{time} {level} {loc} - {message}")
+    ),
 
-      else {
-        format!("{time} {level} {loc} - {message}")
-      }
-    }
+    Context::SessionStart { .. } => (
+      format!("{time}     {name} - {loc} - Session start"),
+      format!("{time}     {loc} - Session start")
+    ),
 
-    Context::SessionStart { .. } => {
-      println!("{time}     {name} - {loc} - Session start");
-      format! ("{time}     {loc} - Session start")
-    }
-
-    Context::SessionEnd { elapsed, .. } => {
-      println!("{time}     {name} - {loc} - Session end, Elapsed: {elapsed}us");
-      format! ("{time}     {loc} - Session end")
-    }
+    Context::SessionEnd { elapsed, .. } => (
+      format!("{time}     {name} - {loc} - Session end, Elapsed: {elapsed}us"),
+      format!("{time}     {loc} - Session end")
+    ),
   }
 }

@@ -135,13 +135,20 @@ impl Loggable for Session {
     if self.died { return; }
     if self.pass { return; }
 
-    let logger = Logger::new(&self.root);
-    if let Some(level) = ctx.get_level() {
-      if level < &logger.get_level() { return; }
+    let logger = self.get_logger();
+
+    let (l, f) = (logger.get_processor())(&ctx);
+
+    let Some(level) = ctx.get_level()
+      else { return; };
+
+    if &logger.get_log_level() <= level {
+      println!("{l}");
     }
 
-    let message = (logger.get_processor())(&ctx);
-    self.msgs.lock().unwrap().push(message);
+    if &logger.get_write_level() <= level {
+      self.msgs.lock().unwrap().push(f);
+    }
   }
 
   #[track_caller]
