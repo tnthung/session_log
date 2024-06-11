@@ -64,10 +64,20 @@ static SENDER: Lazy<Sender<(Arc<Mutex<File>>, String)>> = Lazy::new(|| {
 #[cfg(feature = "async")]
 static mut THREAD: Option<std::thread::JoinHandle<()>> = None;
 
-static mut DEFAULT_PATH     : Lazy<String>     = Lazy::new(|| "./logs".to_string());
+static mut AUTO_DIRECTORY   : bool             = false;
 static mut DEFAULT_PROC     : ContextProcessor = crate::context::processor;
 static mut DEFAULT_WRT_LEVEL: Level            = Level::Verbose;
 static mut DEFAULT_LOG_LEVEL: Level            = Level::Info;
+static mut DEFAULT_PATH     : Lazy<String>     = Lazy::new(||
+  if unsafe { AUTO_DIRECTORY } {
+    let name = std::env::current_exe().unwrap();
+    name.file_stem().unwrap().to_str().unwrap().to_string()
+  }
+
+  else {
+    "./logs".to_string()
+  }
+);
 
 
 fn get_time_tuple() -> (u32, u32, u32, u32) {
@@ -140,6 +150,7 @@ impl Logger {
   ///
   /// The default directory is `./logs`.
   pub fn set_default_directory(directory: impl Into<String>) {
+    if unsafe { AUTO_DIRECTORY } { return; }
     unsafe { *DEFAULT_PATH = directory.into(); };
   }
 
@@ -185,6 +196,18 @@ impl Logger {
   /// Get the default processor for all new logging entries.
   pub fn get_default_processor() -> fn(&Context) -> (String, String) {
     unsafe { DEFAULT_PROC }
+  }
+
+  /// Set the if the logger should automatically set the directory based on the current application
+  /// name. Once set, the directory option will no longer take effect.
+  pub fn set_auto_directory(auto: bool) {
+    unsafe { AUTO_DIRECTORY = auto; }
+  }
+
+  /// Get the if the logger should automatically set the directory based on the current application
+  /// name.
+  pub fn get_auto_directory() -> bool {
+    unsafe { AUTO_DIRECTORY }
   }
 
   #[cfg(feature = "async")]
@@ -347,6 +370,8 @@ impl Logger {
   /// }
   /// ```
   pub fn set_directory(self, directory: impl Into<String>) -> Self {
+    if unsafe { AUTO_DIRECTORY } { return self; }
+
     let mut loggers = LOGGERS.lock().unwrap();
     let inner = loggers.get_mut(&self.0).unwrap();
 
