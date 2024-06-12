@@ -187,11 +187,12 @@ impl Loggable for Session {
     let loc  = std::panic::Location::caller();
     let file = loc.file();
     let line = loc.line();
+    let name = name.into();
 
     let ses = Session {
       died: false,
       pass: false,
-      name: name.into(),
+      name: name.clone(),
       root: self.root.clone(),
       ease: true,
       time,
@@ -206,7 +207,7 @@ impl Loggable for Session {
       file,
       line,
       logger : &self.root,
-      session: &self.name,
+      session: &name,
     });
 
     ses
