@@ -139,8 +139,11 @@ impl Loggable for Session {
 
     let (l, f) = (logger.get_processor())(&ctx);
 
-    let Some(level) = ctx.get_level()
-      else { return; };
+    let Some(level) = ctx.get_level() else {
+      println!("{l}");
+      self.msgs.lock().unwrap().push(f);
+      return;
+    };
 
     if &logger.get_log_level() <= level {
       println!("{l}");
