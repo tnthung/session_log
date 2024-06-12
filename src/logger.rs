@@ -71,7 +71,8 @@ static mut DEFAULT_LOG_LEVEL: Level            = Level::Info;
 static mut DEFAULT_PATH     : Lazy<String>     = Lazy::new(||
   if unsafe { AUTO_DIRECTORY } {
     let name = std::env::current_exe().unwrap();
-    name.file_stem().unwrap().to_str().unwrap().to_string()
+    let name = name.file_stem().unwrap().to_str().unwrap();
+    format!("./logs/{name}")
   }
 
   else {
