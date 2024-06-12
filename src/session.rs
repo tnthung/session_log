@@ -137,7 +137,6 @@ impl Session {
     }
 
     else {
-      dbg!(&msgs);
       let mut end_line = msgs.last().unwrap().to_owned();
 
       let index = end_line.find("     ").unwrap() + 5;
