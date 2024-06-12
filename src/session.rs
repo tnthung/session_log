@@ -49,6 +49,7 @@ pub struct Session {
   time: DateTime<Local>,
   file: &'static str,
   line: u32,
+  ease: bool,
 }
 
 
@@ -64,6 +65,7 @@ impl Session {
       pass: false,
       root: logger.to_string(),
       name: name.clone(),
+      ease: true,
       time,
       msgs,
       sire,
@@ -92,6 +94,13 @@ impl Session {
     self.pass = true;
   }
 
+  /// Set if the session write only elapsed when empty session dump.\
+  /// Default is `true`.
+  pub fn set_ease_on_empty(mut self, ease: bool) -> Self {
+    self.ease = ease;
+    self
+  }
+
   pub(self) fn dump(&mut self, elapsed: i64) {
     if self.died { return; }
     self.died = true;
@@ -99,30 +108,44 @@ impl Session {
     let mut rslt = Vec::new();
     let     msgs = self.msgs.lock().unwrap();
 
-    rslt.reserve(7 + msgs.len());
+    if !self.ease || msgs.len() > 2 {   // 2 is for the start and end of the session
+      rslt.reserve(7 + msgs.len());
 
-    rslt.push(format!("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
-    rslt.push(format!("┃ Session: {}", self.name));
-    rslt.push(format!("┃ Elapsed: {elapsed}us"));
-    rslt.push(format!("┃"));
+      rslt.push(format!("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
+      rslt.push(format!("┃ Session: {}", self.name));
+      rslt.push(format!("┃ Elapsed: {elapsed}us"));
+      rslt.push(format!("┃"));
 
-    for msg in msgs.iter() {
-      for line in msg.lines() {
-        let is_border = line.starts_with("┏") || line.starts_with("┗");
-        let is_nested = line.starts_with("┃") || is_border;
+      for msg in msgs.iter() {
+        for line in msg.lines() {
+          let is_border = line.starts_with("┏") || line.starts_with("┗");
+          let is_nested = line.starts_with("┃") || is_border;
 
-        let space = if is_nested { ""                    } else { " "  };
-        let line  = if is_border { &line[..line.len()-3] } else { line };
+          let space = if is_nested { ""                    } else { " "  };
+          let line  = if is_border { &line[..line.len()-3] } else { line };
 
-        rslt.push(format!("┃{space}{line}"));
+          rslt.push(format!("┃{space}{line}"));
+        }
+      }
+
+      rslt.push(format!("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
+
+      if let Some(sire) = &self.sire {
+        sire.lock().unwrap().append(&mut rslt);
+        return;
       }
     }
 
-    rslt.push(format!("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
+    else {
+      dbg!(&msgs);
+      let mut end_line = msgs.last().unwrap().to_owned();
 
-    if let Some(sire) = &self.sire {
-      sire.lock().unwrap().append(&mut rslt);
-      return;
+      let index = end_line.find("     ").unwrap() + 5;
+
+      end_line.replace_range(index..index+1, &format!("{}:{} - ", self.root, self.name));
+      end_line.push_str(&format!(", Elapsed: {elapsed}us"));
+
+      rslt.push(end_line);
     }
 
     Logger::new(&self.root).write_line(&rslt.join("\n"));
@@ -171,6 +194,7 @@ impl Loggable for Session {
       pass: false,
       name: name.into(),
       root: self.root.clone(),
+      ease: true,
       time,
       msgs,
       sire,
