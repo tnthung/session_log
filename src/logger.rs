@@ -37,23 +37,9 @@ static SENDER: Lazy<Sender<(Arc<Mutex<File>>, String)>> = Lazy::new(|| {
 
   unsafe {
     THREAD = Some(std::thread::spawn(move || {
-      use std::sync::mpsc::TryRecvError;
-
-      loop {
-        match rx.try_recv() {
-          Ok((file, message)) => {
-            let mut file = file.lock().unwrap();
-            writeln!(file, "{}", message).unwrap();
-          }
-
-          Err(TryRecvError::Empty) => {
-            if THREAD.is_none() { break; }
-            std::thread::sleep(std::time::Duration::from_micros(1));
-          }
-
-          Err(TryRecvError::Disconnected) =>
-            break,
-        }
+      while let Ok((file, message)) = rx.recv() {
+        let mut file = file.lock().unwrap();
+        writeln!(file, "{}", message).unwrap();
       }
     }));
   }
