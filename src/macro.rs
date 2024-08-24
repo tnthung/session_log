@@ -83,10 +83,7 @@ macro_rules! log_error {
 #[macro_export]
 macro_rules! log_fatal {
   ($logger:expr, $($t:tt)*) => {{
-    use $crate::{ Level, prelude::* };
-    if $logger.get_write_level() <= Level::Fatal
-    || $logger.get_log_level()   <= Level::Fatal {
-      $logger.fatal(&format!($($t)*));
-    }
+    use $crate::prelude::*;
+    $logger.fatal(&format!($($t)*));
   }};
 }
