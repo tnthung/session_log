@@ -13,6 +13,9 @@ pub trait Loggable {
   /// Get the name of current logger.
   fn name(&self) -> &str;
 
+  /// Get the path of the log file.
+  fn path(&self) -> &str;
+
   /// Get the writing level of the root logger.
   fn write_level(&self) -> Level;
 
