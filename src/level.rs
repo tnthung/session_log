@@ -3,7 +3,7 @@ use crate::*;
 
 /// Level enum is representing the level of message & which level the logger accepts. There are 7 that
 /// are available: Debug, Verbose, Info, Warning, Critical, Error, and Fatal.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Level {
   /// `Debug` level is used for debugging purposes. When built with release mode, this level will not
   /// be either written to a file or printed to the console even if the logger accepts this level.
