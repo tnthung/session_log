@@ -1,12 +1,13 @@
 use crate::*;
 
 
-pub trait Formatter: Send {
+pub trait Formatter: Send + Sync {
   fn for_write(&self, ctx: &Context, f: &mut std::fmt::Formatter<'_>);
   fn for_print(&self, ctx: &Context, f: &mut std::fmt::Formatter<'_>);
 }
 
 
+#[derive(Debug, Clone, Copy)]
 pub struct DefaultFormatter;
 
 
