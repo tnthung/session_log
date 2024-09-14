@@ -6,3 +6,4 @@ mod level;     pub use level    ::*;
 mod context;   pub use context  ::*;
 mod formatter; pub use formatter::*;
 mod loggable;  pub use loggable ::*;
+mod config;    pub use config   ::*;
