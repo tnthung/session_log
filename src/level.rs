@@ -20,7 +20,7 @@ pub enum Level {
 
 
 impl Output for Level {
-  fn for_write(&self, f: &mut std::fmt::Formatter<'_>) {
+  fn for_write(&self, f: &mut impl std::fmt::Write) {
     match self {
       Level::Debug    => write!(f, "[D]"),
       Level::Verbose  => write!(f, "[V]"),
@@ -33,7 +33,7 @@ impl Output for Level {
   }
 
   #[cfg(feature = "color")]
-  fn for_print(&self, f: &mut std::fmt::Formatter<'_>) {
+  fn for_print(&self, f: &mut impl std::fmt::Write) {
     match self {
       Level::Debug    => write!(f, "\x1b[90m[D]\x1b[0m"),        // gray
       Level::Verbose  => write!(f, "\x1b[37m[V]\x1b[0m"),        // white
@@ -46,7 +46,7 @@ impl Output for Level {
   }
 
   #[cfg(not(feature = "color"))]
-  fn for_print(&self, f: &mut std::fmt::Formatter<'_>) {
+  fn for_print(&self, f: &mut impl std::fmt::Write) {
     self.for_write(f);
   }
 }

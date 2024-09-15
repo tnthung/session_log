@@ -44,7 +44,7 @@ impl Source {
 
 
 impl Output for Source {
-  fn for_write(&self, f: &mut std::fmt::Formatter<'_>) {
+  fn for_write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.0.first().unwrap()).unwrap();
 
     if self.0.len() > 1 {
@@ -52,7 +52,7 @@ impl Output for Source {
     }
   }
 
-  fn for_print(&self, f: &mut std::fmt::Formatter<'_>) {
+  fn for_print(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.0.join(":")).unwrap();
   }
 }

@@ -2,8 +2,8 @@ use crate::*;
 
 
 pub trait Formatter: Send + Sync {
-  fn for_write(&self, ctx: &Context, f: &mut std::fmt::Formatter<'_>);
-  fn for_print(&self, ctx: &Context, f: &mut std::fmt::Formatter<'_>);
+  fn for_write(ctx: &Context, f: &mut impl std::fmt::Write);
+  fn for_print(ctx: &Context, f: &mut impl std::fmt::Write);
 }
 
 
@@ -12,7 +12,7 @@ pub struct DefaultFormatter;
 
 
 impl Formatter for DefaultFormatter {
-  fn for_write(&self, ctx: &Context, f: &mut std::fmt::Formatter<'_>) {
+  fn for_write(ctx: &Context, f: &mut impl std::fmt::Write) {
     match ctx {
       Context::Header { time, location, .. } => {
         time.for_write(f);
@@ -45,7 +45,7 @@ impl Formatter for DefaultFormatter {
     }
   }
 
-  fn for_print(&self, ctx: &Context, f: &mut std::fmt::Formatter<'_>) {
+  fn for_print(ctx: &Context, f: &mut impl std::fmt::Write) {
     match ctx {
       Context::Header { time, source, location } => {
         time.for_print(f);

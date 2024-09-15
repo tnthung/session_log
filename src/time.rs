@@ -26,11 +26,11 @@ impl Time {
 
 
 impl Output for Time {
-  fn for_write(&self, f: &mut std::fmt::Formatter<'_>) {
+  fn for_write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.formatted()).unwrap();
   }
 
-  fn for_print(&self, f: &mut std::fmt::Formatter<'_>) {
+  fn for_print(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.formatted()).unwrap();
   }
 }
