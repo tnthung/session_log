@@ -18,8 +18,9 @@ pub struct Config {
   /// The size limit of the log file. When the file size exceeds this limit, the file will be rotated.
   pub size_limit: Option<u64>,
 
-  /// The duration limit of the log file. When the file duration exceeds this limit, the file will be rotated.
-  pub duration_limit: Option<Duration>,
+  /// The duration limit in seconds of the log file. When the file duration exceeds this limit, the
+  /// file will be rotated.
+  pub duration_limit: Option<u64>,
 }
 
 
@@ -28,7 +29,7 @@ static DEFAULT_CONFIG: Lazy<Arc<Mutex<Config>>> = Lazy::new(|| Arc::new(Mutex::n
   print_level   : Level::Info,
   directory     : "./log".to_string(),
   size_limit    : Some(10 * 1024 * 1024),
-  duration_limit: Some(Duration::from_secs(60*60)),
+  duration_limit: Some(60 * 60),
 })));
 
 
