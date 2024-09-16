@@ -29,6 +29,22 @@ pub enum Context {
 
 
 impl Context {
+  pub fn time(&self) -> &Time {
+    match self {
+      Self::Header  { time, .. } => time,
+      Self::Footer  { time, .. } => time,
+      Self::Message { time, .. } => time,
+    }
+  }
+
+  pub fn source(&self) -> &Source {
+    match self {
+      Self::Header  { source, .. } => source,
+      Self::Footer  { source, .. } => source,
+      Self::Message { source, .. } => source,
+    }
+  }
+
   #[track_caller]
   pub(crate) fn new_header(source: Source) -> Self {
     Self::Header {
