@@ -1,5 +1,4 @@
 use crate::*;
-use std::time::Duration;
 use once_cell::sync::Lazy;
 use std::sync::{Arc, Mutex};
 
@@ -27,7 +26,7 @@ pub struct Config {
 static DEFAULT_CONFIG: Lazy<Arc<Mutex<Config>>> = Lazy::new(|| Arc::new(Mutex::new(Config {
   write_level   : Level::Info,
   print_level   : Level::Info,
-  directory     : "./log".to_string(),
+  directory     : "./logs".to_string(),
   size_limit    : Some(10 * 1024 * 1024),
   duration_limit: Some(60 * 60),
 })));
