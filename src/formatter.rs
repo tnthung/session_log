@@ -1,7 +1,7 @@
 use crate::*;
 
 
-pub trait Formatter: Send + Sync {
+pub trait Formatter: Send + Sync + 'static {
   fn for_write(ctx: &Context, f: &mut impl std::fmt::Write);
   fn for_print(ctx: &Context, f: &mut impl std::fmt::Write);
 }

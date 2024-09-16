@@ -10,7 +10,7 @@ pub(crate) trait LoggableInner {
 
 /// Loggable trait is used to define the common behavior for the type that can be used as a logger.
 #[allow(private_bounds)]
-pub trait Loggable: LoggableInner {
+pub trait Loggable: LoggableInner + Send + Sync {
   /// Get the name of the root logger.
   fn root_name(&self) -> &str;
 
