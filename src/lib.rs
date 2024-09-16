@@ -9,3 +9,4 @@ mod formatter; pub use formatter::*;
 mod loggable;  pub use loggable ::*;
 mod config;    pub use config   ::*;
 mod logger;    pub use logger   ::*;
+mod global;    pub use global   ::*;
