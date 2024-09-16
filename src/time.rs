@@ -4,6 +4,7 @@ use chrono::{DateTime, Local, SecondsFormat};
 
 /// Time type is used to represent the current time when the logging is happened. It cannot be created
 /// outside of the library.
+#[derive(Debug, Clone, Copy)]
 pub struct Time(DateTime<Local>);
 
 

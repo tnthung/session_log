@@ -4,6 +4,7 @@ use std::sync::{Arc, Mutex};
 
 
 /// Configuration for the logger.
+#[derive(Debug, Clone)]
 pub struct Config {
   /// The level that the logger will accept for writing to a file.
   pub write_level: Level,
