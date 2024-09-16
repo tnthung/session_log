@@ -30,6 +30,7 @@ impl Location {
     let path = path.strip_prefix(r"\\?\").unwrap_or(path);
     let path = path.strip_prefix(env!("CARGO_MANIFEST_DIR")).unwrap_or(path);
     let path = path.strip_prefix(r"\").unwrap_or(path);
+    let path = path.strip_prefix(r"/").unwrap_or(path);
 
     path.to_string()
   }
