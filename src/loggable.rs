@@ -1,12 +1,16 @@
 use crate::*;
 
 
-/// Loggable trait is used to define the common behavior for the type that can be used as a logger.
-pub trait Loggable {
+pub(crate) trait LoggableInner {
   /// Log a message with the given level.
   #[track_caller]
   fn log(&self, level: Level, message: &str);
+}
 
+
+/// Loggable trait is used to define the common behavior for the type that can be used as a logger.
+#[allow(private_bounds)]
+pub trait Loggable: LoggableInner {
   /// Get the name of the root logger.
   fn root_name(&self) -> &str;
 
