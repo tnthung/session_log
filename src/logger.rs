@@ -4,11 +4,10 @@ use std::fs::File;
 use std::io::Write;
 use std::sync::Mutex;
 use std::time::Instant;
-use std::marker::PhantomData;
 
 
 /// Logger is the base type that actually handle the loggings
-pub struct Logger<F: Formatter> {
+pub struct Logger {
   name       : String,
   write_level: Level,
   print_level: Level,
@@ -19,21 +18,23 @@ pub struct Logger<F: Formatter> {
   dura_limit : Option<u64>,
   char_count : Mutex<u64>,
   size_limit : Option<u64>,
-  _phantom   : PhantomData<F>,
+
+  pub(crate) for_write: fn(&Context) -> String,
+  pub(crate) for_print: fn(&Context) -> String,
 }
 
 
-impl Logger<DefaultFormatter> {
+impl Logger {
   /// Creating a new logger with the given name & default configurations.
   pub fn default(name: impl Into<String>) -> Self {
-    Self::new(name, Config::default())
+    Self::new::<DefaultFormatter>(name, Config::default())
   }
 }
 
 
-impl<F: Formatter> Logger<F> {
+impl Logger {
   /// Creating a new logger with the given name.
-  pub fn new(name: impl Into<String>, config: Config) -> Self {
+  pub fn new<F: Formatter>(name: impl Into<String>, config: Config) -> Self {
     let (path, file) = new_file(
       &config.directory,
       &config.duration_limit,
@@ -50,7 +51,8 @@ impl<F: Formatter> Logger<F> {
       size_limit : config.size_limit,
       dura_limit : config.duration_limit,
       last_change: Mutex::new(Instant::now()),
-      _phantom   : PhantomData,
+      for_write  : F::for_write,
+      for_print  : F::for_print,
     }
   }
 
@@ -64,7 +66,7 @@ impl<F: Formatter> Logger<F> {
   /// Due to the uncertainty of if the session will log anything, the header will be deferred until
   /// the first log. If the session logged anything, it'll act like a non-silent session.
   #[track_caller]
-  pub fn session<'a>(&'a self, name: &str, silent: bool) -> Session<'a, F> {
+  pub fn session<'a>(&'a self, name: &str, silent: bool) -> Session<'a> {
     Session::new(name, Source::new(&self.name), self, None, silent)
   }
 
@@ -95,7 +97,7 @@ impl<F: Formatter> Logger<F> {
 }
 
 
-impl<F: Formatter> LoggableInner for Logger<F> {
+impl LoggableInner for Logger {
   fn log(&self, level: Level, message: &str) {
     let ctx = Context::new_message(
       Source::new(&self.name),
@@ -104,24 +106,18 @@ impl<F: Formatter> LoggableInner for Logger<F> {
     );
 
     if level >= self.print_level {
-      let mut string = String::new();
-      F::for_print(&ctx, &mut string);
-
-      println!("{string}");
+      println!("{}", (self.for_print)(&ctx));
     }
 
     if level >= self.write_level {
       self.check_rotate();
-
-      let mut string = String::new();
-      F::for_write(&ctx, &mut string);
-      self.write(&string);
+      self.write(&(self.for_write)(&ctx));
     }
   }
 }
 
 
-impl<F: Formatter> Loggable for Logger<F> {
+impl Loggable for Logger {
   fn root_name(&self) -> &str {
     &self.name
   }

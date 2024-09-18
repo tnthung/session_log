@@ -21,28 +21,26 @@ type Ctxs = Arc<Mutex<Vec<Ctx>>>;
 /// will not be printed or written if the session never logged anything. Due to the uncertainty of if
 /// the session will log anything, the header will be deferred until the first log. If the session
 /// logged anything, then it acts like a normal session.
-pub struct Session<'a, F: Formatter> {
+pub struct Session<'a> {
   name  : String,
   source: Source,
-  logger: &'a Logger<F>,
+  logger: &'a Logger,
   ctxs  : Ctxs,
   parent: Option<&'a Self>,
   silent: Mutex<bool>,
 }
 
 
-impl<'a, F: Formatter> Session<'a, F> {
+impl<'a> Session<'a> {
   #[track_caller]
-  pub(crate) fn new(name: &str, source: Source, logger: &'a Logger<F>, parent: Option<&'a Self>, silent: bool) -> Self {
+  pub(crate) fn new(name: &str, source: Source, logger: &'a Logger, parent: Option<&'a Self>, silent: bool) -> Self {
     let mut ctxs   = Vec::new();
     let     source = source.session(name);
 
     let header = Context::new_header(source.clone());
 
     if !silent {
-      let mut s = String::new();
-      F::for_print(&header, &mut s);
-      println!("{s}");
+      println!("{}", (logger.for_print)(&header));
     }
 
     ctxs.push(Ctx::Context(header));
@@ -68,7 +66,7 @@ impl<'a, F: Formatter> Session<'a, F> {
 }
 
 
-impl<'a, F: Formatter> Drop for Session<'a, F> {
+impl Drop for Session<'_> {
   fn drop(&mut self) {
     if *self.silent.lock().unwrap() { return; }
 
@@ -82,11 +80,7 @@ impl<'a, F: Formatter> Drop for Session<'a, F> {
       &header.start().unwrap(),
       *header.location());
 
-    { // Print the footer
-      let mut string = String::new();
-      F::for_print(&footer, &mut string);
-      println!("{string}");
-    }
+    println!("{}", (self.logger.for_print)(&footer));
 
     let mut lines = Vec::new();
 
@@ -118,10 +112,7 @@ impl<'a, F: Formatter> Drop for Session<'a, F> {
         }
 
         Ctx::Context(ctx) => {
-          let mut string = String::new();
-          F::for_write(&ctx, &mut string);
-
-          for line in string.split('\n') {
+          for line in (self.logger.for_print)(&ctx).split('\n') {
             lines.push(format!("┃ {line}"));
           }
         }
@@ -147,7 +138,7 @@ impl<'a, F: Formatter> Drop for Session<'a, F> {
 }
 
 
-impl<'a, F: Formatter> LoggableInner for Session<'a, F> {
+impl LoggableInner for Session<'_> {
   fn log(&self, level: Level, message: &str) {
     let mut ctxs   = self.ctxs  .lock().unwrap();
     let mut silent = self.silent.lock().unwrap();
@@ -160,16 +151,11 @@ impl<'a, F: Formatter> LoggableInner for Session<'a, F> {
         let Ctx::Context(header) = ctxs.first().unwrap()
           else { unreachable!() };
 
-        let mut s = String::new();
-        F::for_print(&header, &mut s);
-        println!("{s}");
-
+        println!("{}", (self.logger.for_print)(&header));
         *silent = false;
       }
 
-      let mut string = String::new();
-      F::for_print(&ctx, &mut string);
-      println!("{string}");
+      println!("{}", (self.logger.for_print)(&ctx));
     }
 
     if level >= self.logger.write_level() {
@@ -179,7 +165,7 @@ impl<'a, F: Formatter> LoggableInner for Session<'a, F> {
 }
 
 
-impl<'a, F: Formatter> Loggable for Session<'a, F> {
+impl Loggable for Session<'_> {
   fn root_name(&self) -> &str {
     self.logger.root_name()
   }

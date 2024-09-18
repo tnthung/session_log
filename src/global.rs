@@ -9,7 +9,7 @@ use once_cell::sync::Lazy;
 /// name. This is useful when the logger is configured once and used in multiple places. The logger
 /// will be created with default configurations if it does not exist.
 #[derive(Clone)]
-pub struct Global(Arc<dyn Loggable>);
+pub struct Global(Arc<Logger>);
 
 
 static GLOBAL: Lazy<Mutex<HashMap<Arc<str>, Global>>> = Lazy::new(|| Mutex::new(HashMap::new()));
@@ -32,7 +32,7 @@ impl Global {
 
   /// Register a logger with the given name.
   pub fn register<F: Formatter>(name: &str, config: Config) -> Self {
-    let logger = Self(Arc::new(Logger::<F>::new(name, config)));
+    let logger = Self(Arc::new(Logger::new::<F>(name, config)));
     GLOBAL.lock().unwrap().insert(name.into(), logger.clone());
     logger
   }
@@ -45,7 +45,7 @@ impl Global {
 
 
 impl std::ops::Deref for Global {
-  type Target = dyn Loggable;
+  type Target = Logger;
 
   fn deref(&self) -> &Self::Target {
     self.0.as_ref()
