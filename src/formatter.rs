@@ -21,11 +21,11 @@ impl Formatter for DefaultFormatter {
         write!(f, " - Session Start").unwrap();
       }
 
-      Context::Footer { time, location, elapsed, .. } => {
+      Context::Footer { time, location, .. } => {
         time.for_write(f);
         write!(f, "     ").unwrap();
         location.for_write(f);
-        write!(f, " - Session End ({}us)", elapsed.as_micros()).unwrap();
+        write!(f, " - Session End").unwrap();
       }
 
       Context::Message { time, source, location, level, message, .. } => {
