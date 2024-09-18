@@ -23,7 +23,6 @@ type Ctxs = Arc<Mutex<Vec<Ctx>>>;
 /// logged anything, then it acts like a normal session.
 pub struct Session<'a, F: Formatter> {
   name  : String,
-  start : Time,
   source: Source,
   logger: &'a Logger<F>,
   ctxs  : Ctxs,
@@ -39,7 +38,6 @@ impl<'a, F: Formatter> Session<'a, F> {
     let     source = source.session(name);
 
     let header = Context::new_header(source.clone());
-    let start  = header.time().clone();
 
     if !silent {
       let mut s = String::new();
@@ -53,7 +51,6 @@ impl<'a, F: Formatter> Session<'a, F> {
       name  : name.to_string(),
       ctxs  : Arc::new(Mutex::new(ctxs)),
       silent: Mutex::new(silent),
-      start,
       logger,
       parent,
       source,
@@ -72,12 +69,18 @@ impl<'a, F: Formatter> Session<'a, F> {
 
 
 impl<'a, F: Formatter> Drop for Session<'a, F> {
-  #[track_caller]
   fn drop(&mut self) {
     if *self.silent.lock().unwrap() { return; }
 
     let mut ctxs = self.ctxs.lock().unwrap();
-    let footer = Context::new_footer(self.source.clone(), &self.start);
+
+    let Ctx::Context(header) = ctxs.first().unwrap()
+      else { unreachable!() };
+
+    let footer = Context::new_footer(
+      self.source.clone(),
+      &header.start().unwrap(),
+      *header.location());
 
     { // Print the footer
       let mut string = String::new();
