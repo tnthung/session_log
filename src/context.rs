@@ -72,6 +72,14 @@ impl Context {
     }
   }
 
+  /// Get the start time of the context. (Only available for Header variant)
+  pub fn start(&self) -> Option<&Time> {
+    match self {
+      Self::Header { time, .. } => Some(time),
+      _ => None,
+    }
+  }
+
   /// Get the elapsed time of the context. (Only available for Footer variant)
   pub fn elapsed(&self) -> Option<Duration> {
     match self {
@@ -105,13 +113,13 @@ impl Context {
   }
 
   #[track_caller]
-  pub(crate) fn new_footer(source: Source, start: &Time) -> Self {
+  pub(crate) fn new_footer(source: Source, start: &Time, location: Location) -> Self {
     let elapsed = Time::new().raw().signed_duration_since(start.raw()).to_std().unwrap();
 
     Self::Footer {
-      time    : Time::new(),
-      location: Location::new(),
+      time: Time::new(),
       source,
+      location,
       elapsed,
     }
   }
