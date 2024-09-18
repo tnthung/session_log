@@ -54,6 +54,19 @@ impl<F: Formatter> Logger<F> {
     }
   }
 
+  /// Create a new session from the logger.
+  ///
+  /// There are two types of session: silent & non-silent. Silent session will not print the header
+  /// and footer of the session when no message is logged before the session is dropped. It's useful
+  /// session that may potentially not log anything. Non-silent session will always print the header
+  /// and footer of the session.
+  ///
+  /// Due to the uncertainty of if the session will log anything, the header will be deferred until
+  /// the first log. If the session logged anything, it'll act like a non-silent session.
+  pub fn session<'a>(&'a self, name: &str, silent: bool) -> Session<'a, F> {
+    Session::new(name, Source::new(&self.name), self, None, silent)
+  }
+
   pub(crate) fn check_rotate(&self) {
     let mut char_count  = self.char_count .lock().unwrap();
     let mut last_change = self.last_change.lock().unwrap();
