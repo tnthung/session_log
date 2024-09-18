@@ -1,12 +1,12 @@
 use crate::*;
-use std::rc::Rc;
+use std::sync::Arc;
 
 
 /// Source type is used to store the absolute path of the source logger. A source must be started with
 /// logger, and can have any number layers of session. This type cannot be constructed outside of the
 /// library.
 #[derive(Debug, Clone)]
-pub struct Source(Vec<Rc<str>>);
+pub struct Source(Vec<Arc<str>>);
 
 
 impl Source {
@@ -22,7 +22,7 @@ impl Source {
   }
 
   /// Returns the raw `Rc<str>` slice.
-  pub fn raw(&self) -> &[Rc<str>] {
+  pub fn raw(&self) -> &[Arc<str>] {
     &self.0
   }
 
