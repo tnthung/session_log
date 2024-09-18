@@ -87,7 +87,7 @@ macro_rules! log_debug {
   ($loggable:expr, $($t:tt)*) => {
     {
       use $crate::*;
-      loggable.debug(&format!($($t)*))
+      $loggable.debug(&format!($($t)*))
     }
   };
 }
@@ -98,7 +98,7 @@ macro_rules! log_verbose {
   ($loggable:expr, $($t:tt)*) => {
     {
       use $crate::*;
-      loggable.verbose(&format!($($t)*))
+      $loggable.verbose(&format!($($t)*))
     }
   };
 }
@@ -109,7 +109,7 @@ macro_rules! log_info {
   ($loggable:expr, $($t:tt)*) => {
     {
       use $crate::*;
-      loggable.info(&format!($($t)*))
+      $loggable.info(&format!($($t)*))
     }
   };
 }
@@ -120,7 +120,7 @@ macro_rules! log_warning {
   ($loggable:expr, $($t:tt)*) => {
     {
       use $crate::*;
-      loggable.warning(&format!($($t)*))
+      $loggable.warning(&format!($($t)*))
     }
   };
 }
@@ -131,7 +131,7 @@ macro_rules! log_critical {
   ($loggable:expr, $($t:tt)*) => {
     {
       use $crate::*;
-      loggable.critical(&format!($($t)*))
+      $loggable.critical(&format!($($t)*))
     }
   };
 }
@@ -142,7 +142,7 @@ macro_rules! log_error {
   ($loggable:expr, $($t:tt)*) => {
     {
       use $crate::*;
-      loggable.error(&format!($($t)*))
+      $loggable.error(&format!($($t)*))
     }
   };
 }
@@ -153,7 +153,7 @@ macro_rules! log_fatal {
   ($loggable:expr, $($t:tt)*) => {
     {
       use $crate::*;
-      loggable.fatal(&format!($($t)*))
+      $loggable.fatal(&format!($($t)*))
     }
   };
 }
