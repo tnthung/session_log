@@ -70,6 +70,14 @@ impl<F: Formatter> Logger<F> {
     (*self.path.lock().unwrap(), *self.file.lock().unwrap()) =
       new_file(&self.directory, &self.dura_limit, &self.size_limit);
   }
+
+  pub(crate) fn write(&self, message: &str) {
+    let mut file       = self.file.lock().unwrap();
+    let mut char_count = self.char_count.lock().unwrap();
+
+    writeln!(file, "{message}").unwrap();
+    *char_count += message.len() as u64;
+  }
 }
 
 
@@ -93,13 +101,7 @@ impl<F: Formatter> LoggableInner for Logger<F> {
 
       let mut string = String::new();
       F::for_write(&ctx, &mut string);
-
-      let mut file       = self.file      .lock().unwrap();
-      let mut char_count = self.char_count.lock().unwrap();
-
-      file.write_all(string.as_bytes()).unwrap();
-      file.write_all(b"\n").unwrap();
-      *char_count += string.len() as u64;
+      self.write(&string);
     }
   }
 }
