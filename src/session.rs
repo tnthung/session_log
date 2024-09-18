@@ -99,8 +99,10 @@ impl<'a, F: Formatter> Drop for Session<'a, F> {
     for ctx in ctxs.drain(..) {
       match ctx {
         Ctx::Raw(string) => {
-          if string.starts_with("┏━")
-          || string.starts_with("┗━")
+          let tmp = string.trim_start_matches("┃");
+
+          if tmp.starts_with("┏━")
+          || tmp.starts_with("┗━")
           {
             lines.push(format!("┃{}", &string[..string.len()-3]));
             continue;
