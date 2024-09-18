@@ -29,6 +29,7 @@ pub enum Context {
 
 
 impl Context {
+  /// Get the time of the context.
   pub fn time(&self) -> &Time {
     match self {
       Self::Header  { time, .. } => time,
@@ -37,12 +38,61 @@ impl Context {
     }
   }
 
+  /// Get the source of the context.
   pub fn source(&self) -> &Source {
     match self {
       Self::Header  { source, .. } => source,
       Self::Footer  { source, .. } => source,
       Self::Message { source, .. } => source,
     }
+  }
+
+  /// Get the location of the context.
+  pub fn location(&self) -> &Location {
+    match self {
+      Self::Header  { location, .. } => location,
+      Self::Footer  { location, .. } => location,
+      Self::Message { location, .. } => location,
+    }
+  }
+
+  /// Get the level of the context. (Only available for Message variant)
+  pub fn level(&self) -> Option<Level> {
+    match self {
+      Self::Message { level, .. } => Some(*level),
+      _ => None,
+    }
+  }
+
+  /// Get the message of the context. (Only available for Message variant)
+  pub fn message(&self) -> Option<&str> {
+    match self {
+      Self::Message { message, .. } => Some(message),
+      _ => None,
+    }
+  }
+
+  /// Get the elapsed time of the context. (Only available for Footer variant)
+  pub fn elapsed(&self) -> Option<Duration> {
+    match self {
+      Self::Footer { elapsed, .. } => Some(*elapsed),
+      _ => None,
+    }
+  }
+
+  /// Check if the context is a header.
+  pub fn is_header(&self) -> bool {
+    matches!(self, Self::Header { .. })
+  }
+
+  /// Check if the context is a footer.
+  pub fn is_footer(&self) -> bool {
+    matches!(self, Self::Footer { .. })
+  }
+
+  /// Check if the context is a message.
+  pub fn is_message(&self) -> bool {
+    matches!(self, Self::Message { .. })
   }
 
   #[track_caller]
