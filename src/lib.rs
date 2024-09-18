@@ -12,3 +12,31 @@ mod config;    pub use config   ::*;
 mod logger;    pub use logger   ::*;
 mod global;    pub use global   ::*;
 mod session;   pub use session  ::*;
+
+
+pub mod prelude {
+  pub use crate::{
+    Loggable,
+    Logger,
+    log_debug,
+    log_verbose,
+    log_info,
+    log_warning,
+    log_critical,
+    log_error,
+    log_fatal,
+  };
+}
+
+
+pub mod glog {
+  pub use crate::{
+    glog_debug,
+    glog_verbose,
+    glog_info,
+    glog_warning,
+    glog_critical,
+    glog_error,
+    glog_fatal,
+  };
+}
