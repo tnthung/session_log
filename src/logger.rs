@@ -63,6 +63,7 @@ impl<F: Formatter> Logger<F> {
   ///
   /// Due to the uncertainty of if the session will log anything, the header will be deferred until
   /// the first log. If the session logged anything, it'll act like a non-silent session.
+  #[track_caller]
   pub fn session<'a>(&'a self, name: &str, silent: bool) -> Session<'a, F> {
     Session::new(name, Source::new(&self.name), self, None, silent)
   }

@@ -33,6 +33,7 @@ pub struct Session<'a, F: Formatter> {
 
 
 impl<'a, F: Formatter> Session<'a, F> {
+  #[track_caller]
   pub(crate) fn new(name: &str, source: Source, logger: &'a Logger<F>, parent: Option<&'a Self>, silent: bool) -> Self {
     let mut ctxs   = Vec::new();
     let     source = source.session(name);
@@ -63,6 +64,7 @@ impl<'a, F: Formatter> Session<'a, F> {
   ///
   /// This is useful when you want to create a sub-session from a session. The sub-session will later
   /// be nested under the parent session when written.
+  #[track_caller]
   pub fn session(&'a self, name: &str, silent: bool) -> Self {
     Self::new(name, self.source.clone(), self.logger, Some(self), silent)
   }
@@ -70,6 +72,7 @@ impl<'a, F: Formatter> Session<'a, F> {
 
 
 impl<'a, F: Formatter> Drop for Session<'a, F> {
+  #[track_caller]
   fn drop(&mut self) {
     if *self.silent.lock().unwrap() { return; }
 
