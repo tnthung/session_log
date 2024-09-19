@@ -74,9 +74,10 @@ impl Logger {
     let mut char_count  = self.char_count .lock().unwrap();
     let mut last_change = self.last_change.lock().unwrap();
 
-    let rotate =
-      matches!(self.size_limit, Some(limit) if *char_count                      >= limit) ||
-      matches!(self.dura_limit, Some(limit) if  last_change.elapsed().as_secs() >= limit);
+    let elapsed = last_change.elapsed().as_secs();
+    let rotate  =
+      matches!(self.size_limit, Some(limit) if *char_count >= limit) ||
+      matches!(self.dura_limit, Some(limit) if  elapsed    >= limit);
 
     if !rotate { return; }
 
