@@ -1,26 +1,42 @@
-mod error;
-mod level;
-mod loggable;
-mod logger;
-mod session;
-mod context;
-mod r#macro;
+mod macros;
+mod util;          use util     ::*;
+mod output;    pub use output   ::*;
+mod time;      pub use time     ::*;
+mod source;    pub use source   ::*;
+mod location;  pub use location ::*;
+mod level;     pub use level    ::*;
+mod context;   pub use context  ::*;
+mod formatter; pub use formatter::*;
+mod loggable;  pub use loggable ::*;
+mod config;    pub use config   ::*;
+mod logger;    pub use logger   ::*;
+mod global;    pub use global   ::*;
+mod session;   pub use session  ::*;
 
 
-pub use error   ::*;
-pub use level   ::Level;
-pub use loggable::Loggable;
-pub use logger  ::Logger;
-pub use session ::Session;
-pub use context ::*;
-
-
-/// Re-export the most basic requirement to use the library.
-///
-/// # Exported
-/// - `session_log::logger::Logger`
-/// - `session_log::macro::*`
 pub mod prelude {
-  pub use crate::logger  ::Logger;
-  pub use crate::loggable::Loggable;
+  pub use crate::{
+    Loggable,
+    Logger,
+    log_debug,
+    log_verbose,
+    log_info,
+    log_warning,
+    log_critical,
+    log_error,
+    log_fatal,
+  };
+}
+
+
+pub mod glog {
+  pub use crate::{
+    glog_debug,
+    glog_verbose,
+    glog_info,
+    glog_warning,
+    glog_critical,
+    glog_error,
+    glog_fatal,
+  };
 }

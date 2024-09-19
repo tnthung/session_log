@@ -1,161 +1,137 @@
 use crate::*;
-use chrono::prelude::*;
+use std::time::Duration;
 
 
-/// Context of each log message.
-#[derive(Debug)]
-pub enum Context<'a> {
-  /// Regular log message. All log made by logger will have this context.
-  Log {
-    time   : DateTime<Local>,
-    level  : Level,
-    file   : &'static str,
-    line   : u32,
-    logger : &'a str,
-    session: Option<&'a str>,
-    message: &'a str,
+/// Context type is presenting one line of logging with their corresponding information. It has three
+/// variants: Header, Footer, and Message. Header and Footer are used to represent the start and end of
+/// the logging session, while Message is used to represent the actual logging message. This type cannot
+/// be created outside of the library.
+pub enum Context {
+  Header {
+    time    : Time,
+    source  : Source,
+    location: Location,
   },
-
-  /// Start of a session. Occurs when a logger session is constructed.
-  SessionStart {
-    time   : DateTime<Local>,
-    file   : &'static str,
-    line   : u32,
-    logger : &'a str,
-    session: &'a str,
+  Footer {
+    time    : Time,
+    source  : Source,
+    location: Location,
+    elapsed : Duration,
   },
-
-  /// End of a session. Occurs when a logger session is destructed.
-  SessionEnd {
-    time   : DateTime<Local>,
-    elapsed: i64,
-    file   : &'static str,
-    line   : u32,
-    logger : &'a str,
-    session: &'a str,
+  Message {
+    time    : Time,
+    source  : Source,
+    location: Location,
+    level   : Level,
+    message : String,
   },
 }
 
 
-pub type ContextProcessor = fn(&Context) -> (String, String);
-
-
-impl Context<'_> {
-  /// Get the time of the context in Local timezone.
-  pub fn get_time(&self) -> &DateTime<Local> {
+impl Context {
+  /// Get the time of the context.
+  pub fn time(&self) -> &Time {
     match self {
-      Context::Log          { time, .. } => time,
-      Context::SessionStart { time, .. } => time,
-      Context::SessionEnd   { time, .. } => time,
+      Self::Header  { time, .. } => time,
+      Self::Footer  { time, .. } => time,
+      Self::Message { time, .. } => time,
     }
   }
 
-  /// Get the level of the context. Only available for log messages.
-  pub fn get_level(&self) -> Option<&Level> {
+  /// Get the source of the context.
+  pub fn source(&self) -> &Source {
     match self {
-      Context::Log { level, .. } => Some(level),
+      Self::Header  { source, .. } => source,
+      Self::Footer  { source, .. } => source,
+      Self::Message { source, .. } => source,
+    }
+  }
+
+  /// Get the location of the context.
+  pub fn location(&self) -> &Location {
+    match self {
+      Self::Header  { location, .. } => location,
+      Self::Footer  { location, .. } => location,
+      Self::Message { location, .. } => location,
+    }
+  }
+
+  /// Get the level of the context. (Only available for Message variant)
+  pub fn level(&self) -> Option<Level> {
+    match self {
+      Self::Message { level, .. } => Some(*level),
       _ => None,
     }
   }
 
-  /// Get the file of the context. Not available for session end.
-  pub fn get_file(&self) -> &str {
+  /// Get the message of the context. (Only available for Message variant)
+  pub fn message(&self) -> Option<&str> {
     match self {
-      Context::Log          { file, .. } => file,
-      Context::SessionStart { file, .. } => file,
-      Context::SessionEnd   { file, .. } => file,
+      Self::Message { message, .. } => Some(message),
+      _ => None,
     }
   }
 
-  /// Get the line of the context.
-  pub fn get_line(&self) -> &u32 {
+  /// Get the start time of the context. (Only available for Header variant)
+  pub fn start(&self) -> Option<&Time> {
     match self {
-      Context::Log          { line, .. } => line,
-      Context::SessionStart { line, .. } => line,
-      Context::SessionEnd   { line, .. } => line,
+      Self::Header { time, .. } => Some(time),
+      _ => None,
     }
   }
 
-  /// Get the logger entry name of the context.
-  pub fn get_logger(&self) -> &str {
+  /// Get the elapsed time of the context. (Only available for Footer variant)
+  pub fn elapsed(&self) -> Option<Duration> {
     match self {
-      Context::Log          { logger, .. } => logger,
-      Context::SessionStart { logger, .. } => logger,
-      Context::SessionEnd   { logger, .. } => logger,
+      Self::Footer { elapsed, .. } => Some(*elapsed),
+      _ => None,
     }
   }
 
-  /// Get the session name of the context.
-  pub fn get_session(&self) -> Option<&str> {
-    match self {
-      Context::Log          { session, .. } => *session,
-      Context::SessionStart { session, .. } => Some(session),
-      Context::SessionEnd   { session, .. } => Some(session),
+  /// Check if the context is a header.
+  pub fn is_header(&self) -> bool {
+    matches!(self, Self::Header { .. })
+  }
+
+  /// Check if the context is a footer.
+  pub fn is_footer(&self) -> bool {
+    matches!(self, Self::Footer { .. })
+  }
+
+  /// Check if the context is a message.
+  pub fn is_message(&self) -> bool {
+    matches!(self, Self::Message { .. })
+  }
+
+  #[track_caller]
+  pub(crate) fn new_header(source: Source) -> Self {
+    Self::Header {
+      time    : Time::new(),
+      location: Location::new(),
+      source,
     }
   }
 
-  /// Get the message of the context.
-  pub fn get_message(&self) -> &str {
-    match self {
-      Context::Log { message, .. } => message,
-      Context::SessionStart { .. } => "Session start",
-      Context::SessionEnd   { .. } => "Session end",
+  #[track_caller]
+  pub(crate) fn new_footer(source: Source, start: &Time, location: Location) -> Self {
+    let elapsed = Time::new().raw().signed_duration_since(start.raw()).to_std().unwrap();
+
+    Self::Footer {
+      time: Time::new(),
+      source,
+      location,
+      elapsed,
     }
   }
 
-  /// Get the default formatted string of time.
-  /// `[YYYY]-[MM]-[DD]T[HH]:[mm]:[ss.ssssss]+[ZZ:ZZ]`
-  pub fn get_time_str(&self) -> String {
-    self.get_time().to_rfc3339_opts(SecondsFormat::Micros, true)
-  }
-
-  /// Get the default formatted string of name.
-  ///
-  /// If session is none, the logger name is returned.
-  /// Otherwise, the `"{logger}:{session}"` is returned.
-  pub fn get_name(&self) -> String {
-    let logger  = self.get_logger();
-    let session = self.get_session();
-
-    if let Some(session) = session {
-      return format!("{logger}:{session}");
+  #[track_caller]
+  pub(crate) fn new_message(source: Source, level: Level, message: impl Into<String>) -> Self {
+    Self::Message {
+      time    : Time::new(),
+      location: Location::new(),
+      message : message.into(),
+      source,
+      level,
     }
-
-    logger.to_string()
-  }
-
-  /// Get the default formatted string of location. `"{file}:{line}"`
-  pub fn get_location_str(&self) -> String {
-    format!("{}:{}", self.get_file(), self.get_line())
-  }
-}
-
-
-/// The default processor for outputting to the console and returning the formatted string.
-pub fn processor(ctx: &Context) -> (String, String) {
-  let time = ctx.get_time_str();
-  let name = ctx.get_name();
-  let loc  = ctx.get_location_str();
-
-  match ctx {
-    Context::Log { level, message, session, .. } if session.is_none() => (
-      format!("{time} {level:#} {name} - {loc} - {message}"),
-      format!("{time} {level} {name} - {loc} - {message}")
-    ),
-
-    Context::Log { level, message, .. } => (
-      format!("{time} {level:#} {name} - {loc} - {message}"),
-      format!("{time} {level} {loc} - {message}")
-    ),
-
-    Context::SessionStart { .. } => (
-      format!("{time}     {name} - {loc} - Session start"),
-      format!("{time}     {loc} - Session start")
-    ),
-
-    Context::SessionEnd { elapsed, .. } => (
-      format!("{time}     {name} - {loc} - Session end, Elapsed: {elapsed}us"),
-      format!("{time}     {loc} - Session end")
-    ),
   }
 }

@@ -1,251 +1,188 @@
+use std::sync::{Arc, Mutex};
+
 use crate::*;
 
 
-use std::sync::{Arc, Mutex};
-
-use chrono::prelude::*;
-
-
-type LogContext = Arc<Mutex<Vec<String>>>;
-
-
-/// Sessions are a way to group log messages together. They are useful for tracking the flow of a
-/// program. They can be nested, and when a session is dropped, it will dump all of its messages to
-/// the file at once. Despite the file being written to at once, the messages are still written in
-/// the traditional order on the terminal. It can also be used as a simple profiling tool, as it
-/// will track the starting time of the session and the elapsed time when it is dropped.
-///
-/// # Example
-///
-/// ```no_run
-/// use session_log::{Logger, Loggable};
-///
-/// fn main() {
-///   let logger = Logger::new("main");
-///
-///   foo(logger.session("foo"), 10);
-///   bar(logger.session("bar"), 10);
-/// }
-///
-/// fn foo(logger: impl Loggable, n: usize) {
-///   for i in 0..n {
-///     logger.info(&format!("message-{}", i));
-///   }
-/// }
-///
-/// fn bar(logger: impl Loggable, n: usize) {
-///   for i in 0..n {
-///     logger.warning(&format!("message-{}", i));
-///   }
-/// }
-/// ```
-pub struct Session {
-  died: bool,
-  pass: bool,
-  name: String,
-  root: String,
-  msgs: LogContext,
-  sire: Option<LogContext>,
-  time: DateTime<Local>,
-  file: &'static str,
-  line: u32,
-  ease: bool,
+pub(crate) enum Ctx {
+  Raw(String),
+  Context(Context),
 }
 
 
-impl Session {
-  pub(crate) fn new(name: impl Into<String>, logger: &str, file: &'static str, line: u32) -> Session {
-    let msgs = Arc::new(Mutex::new(Vec::new()));
-    let sire = None;
-    let time = Local::now();
-    let name = name.into();
+type Ctxs = Arc<Mutex<Vec<Ctx>>>;
 
-    let ses = Session {
-      died: false,
-      pass: false,
-      root: logger.to_string(),
-      name: name.clone(),
-      ease: true,
-      time,
-      msgs,
-      sire,
-      file,
-      line,
-    };
 
-    ses.log(Context::SessionStart {
-      time,
-      file,
-      line,
+/// A session is a temporary logger that will print immediately but only write when dropped. All the
+/// logs during the session will be grouped together and write once. It's useful when you want to
+/// log a series of messages such as one session of a request. The session is panic-safe, which means
+/// it will write all the logs when panic.
+///
+/// Apart from the formatter, the session can be `Silent`. If it's silent, then the header & footer
+/// will not be printed or written if the session never logged anything. Due to the uncertainty of if
+/// the session will log anything, the header will be deferred until the first log. If the session
+/// logged anything, then it acts like a normal session.
+pub struct Session<'a> {
+  name  : String,
+  source: Source,
+  logger: &'a Logger,
+  ctxs  : Ctxs,
+  parent: Option<&'a Self>,
+  silent: Mutex<bool>,
+}
+
+
+impl<'a> Session<'a> {
+  #[track_caller]
+  pub(crate) fn new(name: &str, source: Source, logger: &'a Logger, parent: Option<&'a Self>, silent: bool) -> Self {
+    let mut ctxs   = Vec::new();
+    let     source = source.session(name);
+
+    let header = Context::new_header(source.clone());
+
+    if !silent {
+      println!("{}", (logger.for_print)(&header));
+    }
+
+    ctxs.push(Ctx::Context(header));
+
+    Self {
+      name  : name.to_string(),
+      ctxs  : Arc::new(Mutex::new(ctxs)),
+      silent: Mutex::new(silent),
       logger,
-      session: &name,
-    });
-
-    ses
+      parent,
+      source,
+    }
   }
 
-  /// Re-enable the session so it can log messages again.
-  pub fn enable(&mut self) {
-    self.pass = false;
+  /// Create a new session from the session.
+  ///
+  /// This is useful when you want to create a sub-session from a session. The sub-session will later
+  /// be nested under the parent session when written.
+  #[track_caller]
+  pub fn session(&'a self, name: &str, silent: bool) -> Self {
+    Self::new(name, self.source.clone(), self.logger, Some(self), silent)
   }
+}
 
-  /// Temporarily disable the session so it will not log messages.
-  pub fn disable(&mut self) {
-    self.pass = true;
-  }
 
-  /// Set if the session write only elapsed when empty session dump.\
-  /// Default is `true`.
-  pub fn set_ease_on_empty(mut self, ease: bool) -> Self {
-    self.ease = ease;
-    self
-  }
+impl Drop for Session<'_> {
+  fn drop(&mut self) {
+    if *self.silent.lock().unwrap() { return; }
 
-  pub(self) fn dump(&mut self, elapsed: i64) {
-    if self.died { return; }
-    self.died = true;
+    let mut ctxs = self.ctxs.lock().unwrap();
 
-    let mut rslt = Vec::new();
-    let     msgs = self.msgs.lock().unwrap();
+    let Ctx::Context(header) = ctxs.first().unwrap()
+      else { unreachable!() };
 
-    if !self.ease || msgs.len() > 2 {   // 2 is for the start and end of the session
-      rslt.reserve(7 + msgs.len());
+    let footer = Context::new_footer(
+      self.source.clone(),
+      &header.start().unwrap(),
+      *header.location());
 
-      rslt.push(format!("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
-      rslt.push(format!("┃ Session: {}", self.name));
-      rslt.push(format!("┃ Elapsed: {elapsed}us"));
-      rslt.push(format!("┃"));
+    println!("{}", (self.logger.for_print)(&footer));
 
-      for msg in msgs.iter() {
-        for line in msg.lines() {
-          let is_border = line.starts_with("┏") || line.starts_with("┗");
-          let is_nested = line.starts_with("┃") || is_border;
+    let mut lines = Vec::new();
 
-          let space = if is_nested { ""                    } else { " "  };
-          let line  = if is_border { &line[..line.len()-3] } else { line };
+    lines.push("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".to_string());
 
-          rslt.push(format!("┃{space}{line}"));
+    if self.parent.is_none() {
+      lines.push(format!("┃ Logger : {}", self.logger.name()));
+    }
+
+    lines.push(format!("┃ Session: {}", self.name));
+    lines.push(format!("┃ Elapsed: {}", footer.elapsed().unwrap().as_micros()));
+    lines.push("┃".to_string());
+
+    ctxs.push(Ctx::Context(footer));
+
+    for ctx in ctxs.drain(..) {
+      match ctx {
+        Ctx::Raw(string) => {
+          let tmp = string.trim_start_matches("┃");
+
+          if tmp.starts_with("┏━")
+          || tmp.starts_with("┗━")
+          {
+            lines.push(format!("┃{}", &string[..string.len()-3]));
+            continue;
+          }
+
+          lines.push(format!("┃{string}"));
+        }
+
+        Ctx::Context(ctx) => {
+          for line in (self.logger.for_print)(&ctx).split('\n') {
+            lines.push(format!("┃ {line}"));
+          }
+        }
+      }
+    }
+
+    lines.push("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".to_string());
+
+    match &self.parent {
+      Some(parent) => {
+        let mut parent = parent.ctxs.lock().unwrap();
+
+        for line in lines {
+          parent.push(Ctx::Raw(line));
         }
       }
 
-      rslt.push(format!("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"));
-
-      if let Some(sire) = &self.sire {
-        sire.lock().unwrap().append(&mut rslt);
-        return;
+      None => {
+        self.logger.write(&lines.join("\n"));
       }
     }
-
-    else {
-      let mut end_line = msgs.last().unwrap().to_owned();
-
-      let index = end_line.find("     ").unwrap() + 5;
-
-      end_line.replace_range(index..index+1, &format!("{}:{} - ", self.root, self.name));
-      end_line.push_str(&format!(", Elapsed: {elapsed}us"));
-
-      rslt.push(end_line);
-    }
-
-    Logger::new(&self.root).write_line(&rslt.join("\n"));
   }
 }
 
 
-impl Loggable for Session {
-  fn log(&self, ctx: crate::Context) {
-    if self.died { return; }
-    if self.pass { return; }
+impl LoggableInner for Session<'_> {
+  fn log(&self, level: Level, message: &str) {
+    let mut ctxs   = self.ctxs  .lock().unwrap();
+    let mut silent = self.silent.lock().unwrap();
 
-    let logger = self.get_logger();
+    let ctx = Context::new_message(
+      self.source.clone(), level, message);
 
-    let (l, f) = (logger.get_processor())(&ctx);
+    if level >= self.logger.print_level() {
+      if *silent {
+        let Ctx::Context(header) = ctxs.first().unwrap()
+          else { unreachable!() };
 
-    let Some(level) = ctx.get_level() else {
-      println!("{l}");
-      self.msgs.lock().unwrap().push(f);
-      return;
-    };
+        println!("{}", (self.logger.for_print)(&header));
+        *silent = false;
+      }
 
-    if &logger.get_log_level() <= level {
-      println!("{l}");
+      println!("{}", (self.logger.for_print)(&ctx));
     }
 
-    if &logger.get_write_level() <= level {
-      self.msgs.lock().unwrap().push(f);
+    if level >= self.logger.write_level() {
+      ctxs.push(Ctx::Context(ctx));
     }
-  }
-
-  #[track_caller]
-  fn session(&self, name: impl Into<String>) -> Session {
-    if self.died { unreachable!("This should not be happened") }
-
-    let msgs = Arc::new(Mutex::new(Vec::new()));
-    let sire = Some(self.msgs.clone());
-    let time = Local::now();
-
-    let loc  = std::panic::Location::caller();
-    let file = loc.file();
-    let line = loc.line();
-    let name = name.into();
-
-    let ses = Session {
-      died: false,
-      pass: false,
-      name: name.clone(),
-      root: self.root.clone(),
-      ease: true,
-      time,
-      msgs,
-      sire,
-      file,
-      line,
-    };
-
-    ses.log(Context::SessionStart {
-      time,
-      file,
-      line,
-      logger : &self.root,
-      session: &name,
-    });
-
-    ses
-  }
-
-  fn get_name(&self) -> &str {
-    &self.name
-  }
-
-  fn get_logger_name(&self) -> &str {
-    &self.root
-  }
-
-  fn get_logger(&self) -> Logger {
-    Logger(self.root.clone())
-  }
-
-  fn get_session(&self) -> Option<&str> {
-    Some(&self.name)
   }
 }
 
 
-impl Drop for Session {
-  fn drop(&mut self) {
-    let current = Local::now();
-    let elapsed = (current - self.time)
-      .num_microseconds().unwrap();
+impl Loggable for Session<'_> {
+  fn root_name(&self) -> &str {
+    self.logger.root_name()
+  }
 
-    self.log(Context::SessionEnd {
-      time   :  current,
-      file   :  self.file,
-      line   :  self.line,
-      logger : &self.root,
-      session: &self.name,
-      elapsed,
-    });
+  fn name(&self) -> &str {
+    self.name.as_str()
+  }
 
-    self.dump(elapsed);
+  fn path(&self) -> String {
+    self.logger.path()
+  }
+
+  fn write_level(&self) -> Level {
+    self.logger.write_level()
+  }
+
+  fn print_level(&self) -> Level {
+    self.logger.print_level()
   }
 }

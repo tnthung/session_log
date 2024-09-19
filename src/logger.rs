@@ -1,505 +1,141 @@
 use crate::*;
 
+use std::fs::File;
 use std::io::Write;
-use std::fs::{File, OpenOptions, create_dir_all};
-use std::sync::{Arc, Mutex};
-use std::collections::HashMap;
-
-#[cfg(feature = "async")]
-use std::sync::mpsc::{channel, Sender};
-
-use chrono::prelude::*;
-use once_cell::sync::Lazy;
+use std::sync::Mutex;
+use std::time::Instant;
 
 
-#[derive(Debug, Clone)]
-pub struct Logger(pub(crate) String);
+/// Logger is the base type that actually handle the loggings
+pub struct Logger {
+  name       : String,
+  write_level: Level,
+  print_level: Level,
+  directory  : String,
+  file       : Mutex<File>,
+  path       : Mutex<String>,
+  last_change: Mutex<Instant>,
+  dura_limit : Option<u64>,
+  char_count : Mutex<u64>,
+  size_limit : Option<u64>,
 
-
-struct Inner {
-  wrt_level: Level,
-  log_level: Level,
-  hour     : u32,
-  dir      : String,
-  processor: Arc<ContextProcessor>
-}
-
-
-static LOGGERS: Lazy<Mutex<HashMap<String, Inner>>> =
-  Lazy::new(|| Mutex::new(HashMap::new()));
-
-static FILES: Lazy<Mutex<HashMap<String, Arc<Mutex<File>>>>> =
-  Lazy::new(|| Mutex::new(HashMap::new()));
-
-#[cfg(feature = "async")]
-static SENDER: Lazy<Sender<(Arc<Mutex<File>>, String)>> = Lazy::new(|| {
-  let (tx, rx) = channel::<(Arc<Mutex<File>>, String)>();
-
-  unsafe {
-    THREAD = Some(std::thread::spawn(move || {
-      use std::sync::mpsc::TryRecvError;
-
-      loop {
-        match rx.try_recv() {
-          Ok((file, message)) => {
-            let mut file = file.lock().unwrap();
-            writeln!(file, "{}", message).unwrap();
-          }
-
-          Err(TryRecvError::Empty) => {
-            if THREAD.is_none() { break; }
-            std::thread::sleep(std::time::Duration::from_micros(1));
-          }
-
-          Err(TryRecvError::Disconnected) =>
-            break,
-        }
-      }
-    }));
-  }
-
-  tx
-});
-
-#[cfg(feature = "async")]
-static mut THREAD: Option<std::thread::JoinHandle<()>> = None;
-
-static mut AUTO_DIRECTORY   : bool             = false;
-static mut DEFAULT_PROC     : ContextProcessor = crate::context::processor;
-static mut DEFAULT_WRT_LEVEL: Level            = Level::Verbose;
-static mut DEFAULT_LOG_LEVEL: Level            = Level::Info;
-static mut DEFAULT_PATH     : Lazy<String>     = Lazy::new(||
-  if unsafe { AUTO_DIRECTORY } {
-    let name = std::env::current_exe().unwrap();
-    let name = name.file_stem().unwrap().to_str().unwrap();
-    format!("./logs/{name}")
-  }
-
-  else {
-    "./logs".to_string()
-  }
-);
-
-
-fn get_time_tuple() -> (u32, u32, u32, u32) {
-  let now = Local::now();
-
-  (
-    now.year () as u32,
-    now.month(),
-    now.day  (),
-    now.hour ()
-  )
-}
-
-
-fn get_file_name(y: u32, m: u32, d: u32, h: u32) -> String {
-  format!("{y:04}-{m:02}-{d:02}-{h:02}.log")
+  pub(crate) for_write: fn(&Context) -> String,
+  pub(crate) for_print: fn(&Context) -> String,
 }
 
 
 impl Logger {
-  /// Create a new logging entry with the given name. Level and directory is
-  /// defaulted to Info and "logs"\
-  /// **OR**\
-  /// Retrieve an existing logging entry if the entry already exists.
-  ///
-  /// You can chain the configuration methods to set the level and directory.
-  ///
-  /// # Parameters
-  /// - `name` - The name of the logging entry.
-  ///
-  /// # Examples
-  ///
-  /// ```no_run
-  /// use session_log::Logger;
-  ///
-  /// fn main() {
-  ///   let logger  = Logger::new("main");
-  ///   let logger2 = Logger::new("main"); // Retrieve the existing logger
-  ///
-  ///   let logger3 = Logger::new("main")
-  ///     .set_log_level(session_log::Level::Debug);
-  ///     .set_directory("logs/main");
-  /// }
-  pub fn new(name: impl Into<String>) -> Logger {
-    let mut loggers = LOGGERS.lock().unwrap();
-
-    #[cfg(feature = "async")]
-    let _ = *SENDER;
-
-    let name: String = name.into();
-
-    let inner = loggers.get(&name);
-
-    if let None = inner {
-      loggers.insert(name.clone(), Inner {
-        wrt_level: unsafe { DEFAULT_WRT_LEVEL },
-        log_level: unsafe { DEFAULT_LOG_LEVEL },
-        dir      : unsafe { DEFAULT_PATH.clone() },
-        hour     : Local::now().hour(),
-        processor: Arc::new(unsafe { DEFAULT_PROC }),
-      });
-    }
-
-    Logger(name)
+  /// Creating a new logger with the given name & default configurations.
+  pub fn default(name: impl Into<String>) -> Self {
+    Self::new::<DefaultFormatter>(name, Config::default())
   }
+}
 
-  /// Set the default logging directory for all new logging entries.
-  /// The directory will be created if it doesn't exist.
-  /// Old loggers will not be affected by this change.
-  ///
-  /// The default directory is `./logs`.
-  pub fn set_default_directory(directory: impl Into<String>) {
-    if unsafe { AUTO_DIRECTORY } { return; }
-    unsafe { *DEFAULT_PATH = directory.into(); };
-  }
 
-  /// Get the default logging directory for all new logging entries.
-  pub fn get_default_directory() -> String {
-    unsafe { DEFAULT_PATH.clone() }
-  }
+impl Logger {
+  /// Creating a new logger with the given name.
+  pub fn new<F: Formatter>(name: impl Into<String>, config: Config) -> Self {
+    let (path, file) = new_file(
+      &config.directory,
+      &config.duration_limit,
+      &config.size_limit);
 
-  /// Set the default writing level for all new writing entries.
-  /// Old loggers will not be affected by this change.
-  ///
-  /// The default writing level is `Verbose`.
-  pub fn set_default_write_level(level: Level) {
-    unsafe { DEFAULT_WRT_LEVEL = level; };
-  }
-
-  /// Get the default writing level for all new writing entries.
-  pub fn get_default_write_level() -> Level {
-    unsafe { DEFAULT_WRT_LEVEL }
-  }
-
-  /// Set the default logging level for all new logging entries.
-  /// Old loggers will not be affected by this change.
-  ///
-  /// The default logging level is `Info`.
-  pub fn set_default_log_level(level: Level) {
-    unsafe { DEFAULT_LOG_LEVEL = level; };
-  }
-
-  /// Get the default logging level for all new logging entries.
-  pub fn get_default_log_level() -> Level {
-    unsafe { DEFAULT_LOG_LEVEL }
-  }
-
-  /// Set the default processor for all new logging entries.
-  /// Old loggers will not be affected by this change.
-  ///
-  /// The default processor is `$crate::context::processor`.
-  pub fn set_default_processor(proc: fn(&Context) -> (String, String)) {
-    unsafe { DEFAULT_PROC = proc; };
-  }
-
-  /// Get the default processor for all new logging entries.
-  pub fn get_default_processor() -> fn(&Context) -> (String, String) {
-    unsafe { DEFAULT_PROC }
-  }
-
-  /// Set the if the logger should automatically set the directory based on the current application
-  /// name. Once set, the directory option will no longer take effect.
-  pub fn set_auto_directory(auto: bool) {
-    unsafe { AUTO_DIRECTORY = auto; }
-  }
-
-  /// Get the if the logger should automatically set the directory based on the current application
-  /// name.
-  pub fn get_auto_directory() -> bool {
-    unsafe { AUTO_DIRECTORY }
-  }
-
-  #[cfg(feature = "async")]
-  /// This method will join the async thread and wait for it to finish all writing operations.\
-  /// It's crucial to call this method before the program exits to ensure no logs are lost.
-  ///
-  /// This is only available when the `async` feature is enabled.
-  ///
-  /// # Examples
-  ///
-  /// ```no_run
-  /// use session_log::Logger;
-  ///
-  /// fn main() {
-  ///   let logger = Logger::new("main");
-  ///
-  ///   // Do some logging
-  ///   for i in 0..10000 {
-  ///     logger.info(format!("Info {i}"));
-  ///   }
-  ///
-  ///   // Flush the logs
-  ///   Logger::flush();
-  /// }
-  /// ```
-  pub fn flush() {
-    if let Some(thread) = unsafe { THREAD.take() } {
-      thread.join().unwrap();
+    Logger {
+      name       : name.into(),
+      write_level: config.write_level,
+      print_level: config.print_level,
+      directory  : config.directory.clone(),
+      file       : Mutex::new(file),
+      path       : Mutex::new(path),
+      char_count : Mutex::new(0),
+      size_limit : config.size_limit,
+      dura_limit : config.duration_limit,
+      last_change: Mutex::new(Instant::now()),
+      for_write  : F::for_write,
+      for_print  : F::for_print,
     }
   }
 
-  /// Get writing level for this entry.
+  /// Create a new session from the logger.
   ///
-  /// # Examples
+  /// There are two types of session: silent & non-silent. Silent session will not print the header
+  /// and footer of the session when no message is logged before the session is dropped. It's useful
+  /// session that may potentially not log anything. Non-silent session will always print the header
+  /// and footer of the session.
   ///
-  /// ```no_run
-  /// use session_log::{Logger, Level};
-  ///
-  /// fn main() {
-  ///   let logger = Logger::new("main");
-  ///
-  ///   assert_eq!(logger.get_write_level(), Level::Info);
-  /// }
-  /// ```
-  pub fn get_write_level(&self) -> Level {
-    let loggers = LOGGERS.lock().unwrap();
-    let inner = loggers.get(&self.0).unwrap();
-
-    inner.wrt_level
+  /// Due to the uncertainty of if the session will log anything, the header will be deferred until
+  /// the first log. If the session logged anything, it'll act like a non-silent session.
+  #[track_caller]
+  pub fn session<'a>(&'a self, name: &str, silent: bool) -> Session<'a> {
+    Session::new(name, Source::new(&self.name), self, None, silent)
   }
 
-  /// Set writing level for this entry
-  ///
-  /// # Examples
-  ///
-  /// ```no_run
-  /// use session_log::{Logger, Level};
-  ///
-  /// fn main() {
-  ///   let mut logger = Logger::new("main");
-  ///
-  ///   logger = logger.set_write_level(Level::Debug);
-  ///   assert_eq!(logger.get_write_level(), Level::Debug);
-  ///
-  ///   logger = logger.set_write_level(Level::Info);
-  ///   assert_eq!(logger.get_write_level(), Level::Info);
-  /// }
-  /// ```
-  pub fn set_write_level(self, level: Level) -> Self {
-    let mut loggers = LOGGERS.lock().unwrap();
-    let inner = loggers.get_mut(&self.0).unwrap();
+  pub(crate) fn check_rotate(&self) {
+    let mut char_count  = self.char_count .lock().unwrap();
+    let mut last_change = self.last_change.lock().unwrap();
 
-    inner.wrt_level = level;
+    let elapsed = last_change.elapsed().as_secs();
+    let rotate  =
+      matches!(self.size_limit, Some(limit) if *char_count >= limit) ||
+      matches!(self.dura_limit, Some(limit) if  elapsed    >= limit);
 
-    self
+    if !rotate { return; }
+
+    *char_count  = 0;
+    *last_change = Instant::now();
+
+    (*self.path.lock().unwrap(), *self.file.lock().unwrap()) =
+      new_file(&self.directory, &self.dura_limit, &self.size_limit);
   }
 
-  /// Get logging level for this entry.
-  ///
-  /// # Examples
-  ///
-  /// ```no_run
-  /// use session_log::{Logger, Level};
-  ///
-  /// fn main() {
-  ///   let logger = Logger::new("main");
-  ///
-  ///   assert_eq!(logger.get_log_level(), Level::Info);
-  /// }
-  /// ```
-  pub fn get_log_level(&self) -> Level {
-    let loggers = LOGGERS.lock().unwrap();
-    let inner = loggers.get(&self.0).unwrap();
+  pub(crate) fn write(&self, message: &str) {
+    let mut file       = self.file.lock().unwrap();
+    let mut char_count = self.char_count.lock().unwrap();
 
-    inner.log_level
+    writeln!(file, "{message}").unwrap();
+    *char_count += message.len() as u64;
   }
+}
 
-  /// Set logging level for this entry
-  ///
-  /// # Examples
-  ///
-  /// ```no_run
-  /// use session_log::{Logger, Level};
-  ///
-  /// fn main() {
-  ///   let mut logger = Logger::new("main");
-  ///
-  ///   logger = logger.set_log_level(Level::Debug);
-  ///   assert_eq!(logger.get_log_level(), Level::Debug);
-  ///
-  ///   logger = logger.set_log_level(Level::Info);
-  ///   assert_eq!(logger.get_log_level(), Level::Info);
-  /// }
-  /// ```
-  pub fn set_log_level(self, level: Level) -> Self {
-    let mut loggers = LOGGERS.lock().unwrap();
-    let inner = loggers.get_mut(&self.0).unwrap();
 
-    inner.log_level = level;
+impl LoggableInner for Logger {
+  fn log(&self, level: Level, message: &str) {
+    let ctx = Context::new_message(
+      Source::new(&self.name),
+      level,
+      message
+    );
 
-    self
-  }
-
-  /// Get logging directory for this entry.
-  ///
-  /// # Examples
-  ///
-  /// ```no_run
-  /// use session_log::Logger;
-  ///
-  /// fn main() {
-  ///   let logger = Logger::new("main");
-  ///
-  ///   assert_eq!(logger.get_directory(), "logs");
-  /// }
-  /// ```
-  pub fn get_directory(&self) -> String {
-    let loggers = LOGGERS.lock().unwrap();
-    let inner = loggers.get(&self.0).unwrap();
-
-    inner.dir.clone()
-  }
-
-  /// Set logging directory for this entry and create the directory if it doesn't exist. the result
-  /// of creating the directory is returned.
-  ///
-  /// # Examples
-  ///
-  /// ```no_run
-  /// use session_log::Logger;
-  ///
-  /// fn main() {
-  ///   let mut logger = Logger::new("main");
-  ///
-  ///   logger = logger.set_directory("logs/main");
-  ///   assert_eq!(logger.get_directory(), "logs/main");
-  ///
-  ///   logger = logger.set_directory("logs/other");
-  ///   assert_eq!(logger.get_directory(), "logs/other");
-  /// }
-  /// ```
-  pub fn set_directory(self, directory: impl Into<String>) -> Self {
-    if unsafe { AUTO_DIRECTORY } { return self; }
-
-    let mut loggers = LOGGERS.lock().unwrap();
-    let inner = loggers.get_mut(&self.0).unwrap();
-
-    inner.dir = directory.into();
-
-    self
-  }
-
-  pub(crate) fn get_processor(&self) -> Arc<fn(&Context) -> (String, String)> {
-    let loggers = LOGGERS.lock().unwrap();
-    let inner = loggers.get(&self.0).unwrap();
-
-    inner.processor.clone()
-  }
-
-  /// Set the processor for this entry.
-  ///
-  /// # Examples
-  ///
-  /// ```no_run
-  /// use session_log::Logger;
-  ///
-  /// fn main() {
-  ///   let logger = Logger::new("main")
-  ///     .set_proc(|ctx| (
-  ///       // The console will always print "Hello"
-  ///       "Hello".to_string(),
-  ///       // The file will always write "World"
-  ///       "World".to_string()
-  ///     ));
-  /// }
-  /// ```
-  pub fn set_processor(self, proc: fn(&Context) -> (String, String)) -> Self {
-    let mut loggers = LOGGERS.lock().unwrap();
-    let inner = loggers.get_mut(&self.0).unwrap();
-
-    inner.processor = Arc::new(proc);
-
-    self
-  }
-
-  fn get_file(&self) -> Arc<Mutex<File>> {
-    let mut loggers = LOGGERS.lock().unwrap();
-    let mut files   = FILES  .lock().unwrap();
-
-    let inner = loggers.get_mut(&self.0).unwrap();
-
-    let hr   = &mut inner.hour;
-    let dir  = &inner.dir;
-    let now  = get_time_tuple();
-    let file = files.get(dir).clone();
-
-    if file.is_none() || now.3 != *hr {
-      create_dir_all(dir).unwrap();
-
-      let name = get_file_name(now.0, now.1, now.2, now.3);
-      let path = format!("{dir}/{name}");
-      let file = Arc::new(Mutex::new(OpenOptions::new()
-        .create(true).append(true).open(&path).unwrap()));
-
-      files.insert(
-        dir .clone(),
-        file.clone());
-      *hr = now.3;
-
-      return file;
+    if level >= self.print_level {
+      println!("{}", (self.for_print)(&ctx));
     }
 
-    return file.unwrap().clone();
-  }
-
-  pub(crate) fn write_line(&self, message: &str) {
-    let file = self.get_file();
-
-    #[cfg(not(feature = "async"))] {
-      let mut file = file.lock().unwrap();
-      writeln!(file, "{message}").unwrap();
-    }
-
-    #[cfg(feature = "async")] {
-      SENDER.send((file, message.to_string()))
-        .expect("Failed to send message to async thread");
+    if level >= self.write_level {
+      self.check_rotate();
+      self.write(&(self.for_write)(&ctx));
     }
   }
 }
 
 
 impl Loggable for Logger {
-  fn log(&self, ctx: crate::Context) {
-    let loggers = LOGGERS.lock().unwrap();
-    let inner   = loggers.get(&self.0).unwrap();
-
-    let (l, f) = (inner.processor)(&ctx);
-
-    let log_level = inner.log_level;
-    let wrt_level = inner.wrt_level;
-
-    drop(loggers);
-
-    if log_level <= *ctx.get_level().unwrap() {
-      println!("{}", l);
-    }
-
-    if wrt_level <= *ctx.get_level().unwrap() {
-      self.write_line(&f);
-    }
+  fn root_name(&self) -> &str {
+    &self.name
   }
 
-  #[track_caller]
-  fn session(&self, name: impl Into<String>) -> Session {
-    let loc = std::panic::Location::caller();
-    Session::new(name, &self.0, loc.file(), loc.line())
+  fn name(&self) -> &str {
+    &self.name
   }
 
-  fn get_name(&self) -> &str {
-    &self.0
+  fn path(&self) -> String {
+    self.path.lock().unwrap().clone()
   }
 
-  fn get_logger_name(&self) -> &str {
-    &self.0
+  fn write_level(&self) -> Level {
+    self.write_level
   }
 
-  fn get_logger(&self) -> Logger {
-    self.clone()
-  }
-
-  fn get_session(&self) -> Option<&str> {
-    None
+  fn print_level(&self) -> Level {
+    self.print_level
   }
 }

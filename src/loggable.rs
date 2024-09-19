@@ -1,151 +1,72 @@
 use crate::*;
-use chrono::prelude::*;
 
 
-pub trait Loggable {
-  /// Log a message with the dynamic level.
-  fn log(&self, ctx: crate::Context);
-
-  /// Create a new session with the given name.
-  fn session(&self, name: impl Into<String>) -> Session;
-
-  /// Get the name of the current loggable.
-  fn get_name(&self) -> &str;
-
-  /// Get the current logging entry name.
-  fn get_logger_name(&self) -> &str;
-
-  /// Get the logger of the current loggable.
-  fn get_logger(&self) -> Logger;
-
-  /// Get the current session name.
-  fn get_session(&self) -> Option<&str>;
-
-  /// Get the log level of current loggable.
-  fn get_log_level(&self) -> Level {
-    self.get_logger().get_log_level()
-  }
-
-  /// Get the write level of current loggable.
-  fn get_write_level(&self) -> Level {
-    self.get_logger().get_write_level()
-  }
-
-  /// Log a message at the debug level with caller position.
+pub(crate) trait LoggableInner {
+  /// Log a message with the given level.
   #[track_caller]
-  fn debug(&self, message: impl Into<String>) {
-    let loc = std::panic::Location::caller();
+  fn log(&self, level: Level, message: &str);
+}
 
-    self.log(Context::Log {
-      time   : Local::now(),
-      level  : Level::Debug,
-      file   : loc.file(),
-      line   : loc.line(),
-      logger : self.get_logger_name(),
-      session: self.get_session(),
-      message: &message.into(),
-    });
+
+/// Loggable trait is used to define the common behavior for the type that can be used as a logger.
+#[allow(private_bounds)]
+pub trait Loggable: LoggableInner + Send + Sync {
+  /// Get the name of the root logger.
+  fn root_name(&self) -> &str;
+
+  /// Get the name of current logger.
+  fn name(&self) -> &str;
+
+  /// Get the path of the log file.
+  fn path(&self) -> String;
+
+  /// Get the writing level of the root logger.
+  fn write_level(&self) -> Level;
+
+  /// Get the printing level of the root logger.
+  fn print_level(&self) -> Level;
+
+
+  /// Log a message with debug level.
+  #[track_caller]
+  fn debug(&self, message: &str) {
+    self.log(Level::Debug, message);
   }
 
-  /// Log a message at the verbose level with caller position.
+  /// Log a message with verbose level.
   #[track_caller]
-  fn verbose(&self, message: impl Into<String>) {
-    let loc = std::panic::Location::caller();
-
-    self.log(Context::Log {
-      time   : Local::now(),
-      level  : Level::Verbose,
-      file   : loc.file(),
-      line   : loc.line(),
-      logger : self.get_logger_name(),
-      session: self.get_session(),
-      message: &message.into(),
-    });
+  fn verbose(&self, message: &str) {
+    self.log(Level::Verbose, message);
   }
 
-  /// Log a message at the info level with caller position.
+  /// Log a message with info level.
   #[track_caller]
-  fn info(&self, message: impl Into<String>) {
-    let loc = std::panic::Location::caller();
-
-    self.log(Context::Log {
-      time   : Local::now(),
-      level  : Level::Info,
-      file   : loc.file(),
-      line   : loc.line(),
-      logger : self.get_logger_name(),
-      session: self.get_session(),
-      message: &message.into(),
-    });
+  fn info(&self, message: &str) {
+    self.log(Level::Info, message);
   }
 
-  /// Log a message at the warning level with caller position.
+  /// Log a message with warning level.
   #[track_caller]
-  fn warning(&self, message: impl Into<String>) {
-    let loc = std::panic::Location::caller();
-
-    self.log(Context::Log {
-      time   : Local::now(),
-      level  : Level::Warning,
-      file   : loc.file(),
-      line   : loc.line(),
-      logger : self.get_logger_name(),
-      session: self.get_session(),
-      message: &message.into(),
-    });
+  fn warning(&self, message: &str) {
+    self.log(Level::Warning, message);
   }
 
-  /// Log a message at the critical level with caller position.
+  /// Log a message with critical level.
   #[track_caller]
-  fn critical(&self, message: impl Into<String>) {
-    let loc = std::panic::Location::caller();
-
-    self.log(Context::Log {
-      time   : Local::now(),
-      level  : Level::Critical,
-      file   : loc.file(),
-      line   : loc.line(),
-      logger : self.get_logger_name(),
-      session: self.get_session(),
-      message: &message.into(),
-    });
+  fn critical(&self, message: &str) {
+    self.log(Level::Critical, message);
   }
 
-  /// Log a message at the error level with caller position.
+  /// Log a message with error level.
   #[track_caller]
-  fn error(&self, message: impl Into<String>) {
-    let loc = std::panic::Location::caller();
-
-    self.log(Context::Log {
-      time   : Local::now(),
-      level  : Level::Error,
-      file   : loc.file(),
-      line   : loc.line(),
-      logger : self.get_logger_name(),
-      session: self.get_session(),
-      message: &message.into(),
-    });
+  fn error(&self, message: &str) {
+    self.log(Level::Error, message);
   }
 
-  /// Log a message at the fatal level with caller position then panic.
-  ///
-  /// **THIS WILL CAUSE THE PROGRAM TO PANIC**\
-  /// **ONLY USE THIS FOR UNRECOVERABLE ERRORS**
+  /// Log a message with fatal level. The program will panic after logging the message.
   #[track_caller]
-  fn fatal(&self, message: impl Into<String>) -> ! {
-    let loc = std::panic::Location::caller();
-    let message = message.into();
-
-    self.log(Context::Log {
-      time   : Local::now(),
-      level  : Level::Fatal,
-      file   : loc.file(),
-      line   : loc.line(),
-      logger : self.get_logger_name(),
-      session: self.get_session(),
-      message: &message,
-    });
-
-    panic!("{message}");
+  fn fatal(&self, message: &str) -> ! {
+    self.log(Level::Fatal, message);
+    panic!("Fatal error occurred.");
   }
 }
