@@ -17,7 +17,7 @@ pub fn new_file_name(duration: &Option<u64>, size: &Option<u64>) -> String {
       let sec = sec / d * d;
 
       let time = time
-        .with_ordinal0(sec as u32 / 86400 + 1   ).unwrap()
+        .with_ordinal0(sec as u32 / 86400       ).unwrap()
         .with_hour    (sec as u32 % 86400 / 3600).unwrap()
         .with_minute  (sec as u32 % 3600  / 60  ).unwrap()
         .with_second  (sec as u32 % 60          ).unwrap();
