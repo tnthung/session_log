@@ -1,6 +1,5 @@
-use std::sync::{Arc, Mutex};
-
 use crate::*;
+use std::sync::{Arc, Mutex};
 
 
 pub(crate) enum Ctx {
@@ -12,6 +11,12 @@ pub(crate) enum Ctx {
 type Ctxs = Arc<Mutex<Vec<Ctx>>>;
 
 
+pub(crate) enum SessionSrc<'a> {
+  Logger (&'a Logger),
+  Session(&'a Session),
+}
+
+
 /// A session is a temporary logger that will print immediately but only write when dropped. All the
 /// logs during the session will be grouped together and write once. It's useful when you want to
 /// log a series of messages such as one session of a request. The session is panic-safe, which means
@@ -21,37 +26,70 @@ type Ctxs = Arc<Mutex<Vec<Ctx>>>;
 /// will not be printed or written if the session never logged anything. Due to the uncertainty of if
 /// the session will log anything, the header will be deferred until the first log. If the session
 /// logged anything, then it acts like a normal session.
-pub struct Session<'a> {
-  name  : String,
-  source: Source,
-  logger: &'a Logger,
-  ctxs  : Ctxs,
-  parent: Option<&'a Self>,
-  silent: Mutex<bool>,
+pub struct Session {
+  name       : String,
+  source     : Source,
+  writer     : Writer,
+  for_write  : fn(&Context) -> String,
+  for_print  : fn(&Context) -> String,
+  write_level: Level,
+  print_level: Level,
+  ctxs       : Ctxs,
+  parent     : Option<Ctxs>,
+  silent     : Mutex<bool>,
 }
 
 
-impl<'a> Session<'a> {
+impl Session {
   #[track_caller]
-  pub(crate) fn new(name: &str, source: Source, logger: &'a Logger, parent: Option<&'a Self>, silent: bool) -> Self {
-    let mut ctxs   = Vec::new();
-    let     source = source.session(name);
+  pub(crate) fn new(name: &str, source: SessionSrc<'_>, silent: bool) -> Self {
+    let (
+      source,
+      writer,
+      for_write,
+      for_print,
+      write_level,
+      print_level,
+      parent,
+    ) = match source {
+      SessionSrc::Logger(l) => (
+        Source::new(&l.name),
+        l.writer.clone(),
+        l.for_write,
+        l.for_print,
+        l.write_level,
+        l.print_level,
+        None,
+      ),
+
+      SessionSrc::Session(s) => (
+        s.source.session(name),
+        s.writer.clone(),
+        s.for_write,
+        s.for_print,
+        s.write_level,
+        s.print_level,
+        Some(s.ctxs.clone()),
+      ),
+    };
 
     let header = Context::new_header(source.clone());
-
     if !silent {
-      println!("{}", (logger.for_print)(&header));
+      println!("{}", for_print(&header));
     }
 
-    ctxs.push(Ctx::Context(header));
-
     Self {
-      name  : name.to_string(),
-      ctxs  : Arc::new(Mutex::new(ctxs)),
+      name: name.to_string(),
+      ctxs: Arc::new(Mutex::new(
+        vec![Ctx::Context(header)])),
       silent: Mutex::new(silent),
-      logger,
       parent,
       source,
+      writer,
+      for_write,
+      for_print,
+      write_level,
+      print_level,
     }
   }
 
@@ -60,13 +98,13 @@ impl<'a> Session<'a> {
   /// This is useful when you want to create a sub-session from a session. The sub-session will later
   /// be nested under the parent session when written.
   #[track_caller]
-  pub fn session(&'a self, name: &str, silent: bool) -> Self {
-    Self::new(name, self.source.clone(), self.logger, Some(self), silent)
+  pub fn session(&self, name: &str, silent: bool) -> Self {
+    Self::new(name, SessionSrc::Session(self), silent)
   }
 }
 
 
-impl Drop for Session<'_> {
+impl Drop for Session {
   fn drop(&mut self) {
     if *self.silent.lock().unwrap() { return; }
 
@@ -80,14 +118,14 @@ impl Drop for Session<'_> {
       &header.start().unwrap(),
       *header.location());
 
-    println!("{}", (self.logger.for_print)(&footer));
+    println!("{}", (self.for_print)(&footer));
 
     let mut lines = Vec::new();
 
     lines.push("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━".to_string());
 
     if self.parent.is_none() {
-      lines.push(format!("┃ Logger : {}", self.logger.name()));
+      lines.push(format!("┃ Logger : {}", self.source.logger()));
     }
 
     lines.push(format!("┃ Session: {}", self.name));
@@ -112,7 +150,7 @@ impl Drop for Session<'_> {
         }
 
         Ctx::Context(ctx) => {
-          for line in (self.logger.for_print)(&ctx).split('\n') {
+          for line in (self.for_print)(&ctx).split('\n') {
             lines.push(format!("┃ {line}"));
           }
         }
@@ -123,7 +161,7 @@ impl Drop for Session<'_> {
 
     match &self.parent {
       Some(parent) => {
-        let mut parent = parent.ctxs.lock().unwrap();
+        let mut parent = parent.lock().unwrap();
 
         for line in lines {
           parent.push(Ctx::Raw(line));
@@ -131,43 +169,45 @@ impl Drop for Session<'_> {
       }
 
       None => {
-        self.logger.write(&lines.join("\n"));
+        self.writer.lock().unwrap()
+          .write(&lines.join("\n"));
       }
     }
   }
 }
 
 
-impl LoggableInner for Session<'_> {
+impl LoggableInner for Session {
   fn log(&self, level: Level, message: &str) {
-    let mut ctxs   = self.ctxs  .lock().unwrap();
-    let mut silent = self.silent.lock().unwrap();
+    let mut ctxs = self.ctxs.lock().unwrap();
 
     let ctx = Context::new_message(
       self.source.clone(), level, message);
 
-    if level >= self.logger.print_level() {
+    if level >= self.print_level {
+      let mut silent = self.silent.lock().unwrap();
+
       if *silent {
         let Ctx::Context(header) = ctxs.first().unwrap()
           else { unreachable!() };
 
-        println!("{}", (self.logger.for_print)(&header));
+        println!("{}", (self.for_print)(&header));
         *silent = false;
       }
 
-      println!("{}", (self.logger.for_print)(&ctx));
+      println!("{}", (self.for_print)(&ctx));
     }
 
-    if level >= self.logger.write_level() {
+    if level >= self.write_level {
       ctxs.push(Ctx::Context(ctx));
     }
   }
 }
 
 
-impl Loggable for Session<'_> {
+impl Loggable for Session {
   fn root_name(&self) -> &str {
-    self.logger.root_name()
+    self.source.logger().as_ref()
   }
 
   fn name(&self) -> &str {
@@ -175,14 +215,14 @@ impl Loggable for Session<'_> {
   }
 
   fn path(&self) -> String {
-    self.logger.path()
+    self.writer.lock().unwrap().path.clone()
   }
 
   fn write_level(&self) -> Level {
-    self.logger.write_level()
+    self.write_level
   }
 
   fn print_level(&self) -> Level {
-    self.logger.print_level()
+    self.print_level
   }
 }

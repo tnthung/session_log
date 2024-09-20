@@ -1,26 +1,14 @@
 use crate::*;
 
-use std::fs::File;
-use std::io::Write;
-use std::sync::Mutex;
-use std::time::Instant;
-
 
 /// Logger is the base type that actually handle the loggings
 pub struct Logger {
-  name       : String,
-  write_level: Level,
-  print_level: Level,
-  directory  : String,
-  file       : Mutex<File>,
-  path       : Mutex<String>,
-  last_change: Mutex<Instant>,
-  dura_limit : Option<u64>,
-  char_count : Mutex<u64>,
-  size_limit : Option<u64>,
-
-  pub(crate) for_write: fn(&Context) -> String,
-  pub(crate) for_print: fn(&Context) -> String,
+  pub(crate) name       : String,
+  pub(crate) write_level: Level,
+  pub(crate) print_level: Level,
+  pub(crate) writer     : Writer,
+  pub(crate) for_write  : fn(&Context) -> String,
+  pub(crate) for_print  : fn(&Context) -> String,
 }
 
 
@@ -35,22 +23,15 @@ impl Logger {
 impl Logger {
   /// Creating a new logger with the given name.
   pub fn new<F: Formatter>(name: impl Into<String>, config: Config) -> Self {
-    let (path, file) = new_file(
-      &config.directory,
-      &config.duration_limit,
-      &config.size_limit);
-
     Logger {
       name       : name.into(),
       write_level: config.write_level,
       print_level: config.print_level,
-      directory  : config.directory.clone(),
-      file       : Mutex::new(file),
-      path       : Mutex::new(path),
-      char_count : Mutex::new(0),
-      size_limit : config.size_limit,
-      dura_limit : config.duration_limit,
-      last_change: Mutex::new(Instant::now()),
+      writer     : Writer::new(
+        &config.directory,
+        config.duration_limit,
+        config.size_limit,
+      ),
       for_write  : F::for_write,
       for_print  : F::for_print,
     }
@@ -66,36 +47,8 @@ impl Logger {
   /// Due to the uncertainty of if the session will log anything, the header will be deferred until
   /// the first log. If the session logged anything, it'll act like a non-silent session.
   #[track_caller]
-  pub fn session<'a>(&'a self, name: &str, silent: bool) -> Session<'a> {
-    Session::new(name, Source::new(&self.name), self, None, silent)
-  }
-
-  pub(crate) fn check_rotate(&self) {
-    let mut char_count  = self.char_count .lock().unwrap();
-    let mut last_change = self.last_change.lock().unwrap();
-
-    let elapsed = last_change.elapsed().as_secs();
-    let rotate  =
-      matches!(self.size_limit, Some(limit) if *char_count >= limit) ||
-      matches!(self.dura_limit, Some(limit) if  elapsed    >= limit);
-
-    if !rotate { return; }
-
-    *char_count  = 0;
-    *last_change = Instant::now();
-
-    (*self.path.lock().unwrap(), *self.file.lock().unwrap()) =
-      new_file(&self.directory, &self.dura_limit, &self.size_limit);
-  }
-
-  pub(crate) fn write(&self, message: &str) {
-    self.check_rotate();
-
-    let mut file       = self.file.lock().unwrap();
-    let mut char_count = self.char_count.lock().unwrap();
-
-    writeln!(file, "{message}").unwrap();
-    *char_count += message.len() as u64;
+  pub fn session(&self, name: &str, silent: bool) -> Session {
+    Session::new(name, SessionSrc::Logger(self), silent)
   }
 }
 
@@ -113,7 +66,8 @@ impl LoggableInner for Logger {
     }
 
     if level >= self.write_level {
-      self.write(&(self.for_write)(&ctx));
+      self.writer.lock().unwrap()
+        .write(&(self.for_write)(&ctx));
     }
   }
 }
@@ -129,7 +83,7 @@ impl Loggable for Logger {
   }
 
   fn path(&self) -> String {
-    self.path.lock().unwrap().clone()
+    self.writer.lock().unwrap().path.clone()
   }
 
   fn write_level(&self) -> Level {

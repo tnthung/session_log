@@ -40,6 +40,11 @@ impl Source {
   pub fn is_from_session(&self) -> bool {
     self.0.len() > 1
   }
+
+  /// Get the logger name.
+  pub fn logger(&self) -> &Arc<str> {
+    self.0.first().unwrap()
+  }
 }
 
 
