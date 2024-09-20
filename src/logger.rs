@@ -89,6 +89,8 @@ impl Logger {
   }
 
   pub(crate) fn write(&self, message: &str) {
+    self.check_rotate();
+
     let mut file       = self.file.lock().unwrap();
     let mut char_count = self.char_count.lock().unwrap();
 
@@ -111,7 +113,6 @@ impl LoggableInner for Logger {
     }
 
     if level >= self.write_level {
-      self.check_rotate();
       self.write(&(self.for_write)(&ctx));
     }
   }
