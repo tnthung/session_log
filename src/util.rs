@@ -7,26 +7,25 @@ pub fn new_file_name(duration: &Option<u64>, size: &Option<u64>) -> String {
     Some(d) => {
       let time = chrono::Local::now();
 
-      let mut sec = 0;
+      let mut s = 0;
 
-      sec += (time.ordinal() as u64 - 1) * 86400;
-      sec +=  time.hour   () as u64      * 3600;
-      sec +=  time.minute () as u64      * 60;
-      sec +=  time.second () as u64;
+      s += (time.ordinal() as u64 - 1) * 86400;
+      s +=  time.hour   () as u64      * 3600;
+      s +=  time.minute () as u64      * 60;
+      s +=  time.second () as u64;
 
-      let sec = sec / d * d;
+      let s = s / d * d;
 
-      let (ord , rest) = (sec / 86400, sec % 86400);
-      let (hour, rest) = (rest / 3600, rest % 3600);
-      let (min , sec ) = (rest / 60  , rest % 60  );
+      let (o, r) = (s / 86400, s % 86400);
+      let (h, r) = (r / 3600 , r % 3600 );
+      let (m, s) = (r / 60   , r % 60   );
 
-      let time = time
-        .with_ordinal0(ord  as u32).unwrap()
-        .with_hour    (hour as u32).unwrap()
-        .with_minute  (min  as u32).unwrap()
-        .with_second  (sec  as u32).unwrap();
-
-      time.format("log %Y-%m-%d_%H-%M-%S").to_string()
+      time
+        .with_ordinal0(o as u32).unwrap()
+        .with_hour    (h as u32).unwrap()
+        .with_minute  (m as u32).unwrap()
+        .with_second  (s as u32).unwrap()
+        .format("log %Y-%m-%d_%H-%M-%S").to_string()
     }
 
     None => "log".to_string()
