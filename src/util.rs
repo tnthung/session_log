@@ -16,11 +16,15 @@ pub fn new_file_name(duration: &Option<u64>, size: &Option<u64>) -> String {
 
       let sec = sec / d * d;
 
+      let (ord , rest) = (sec / 86400, sec % 86400);
+      let (hour, rest) = (rest / 3600, rest % 3600);
+      let (min , sec ) = (rest / 60  , rest % 60  );
+
       let time = time
-        .with_ordinal0((sec / 86400       ) as u32).unwrap()
-        .with_hour    ((sec % 86400 / 3600) as u32).unwrap()
-        .with_minute  ((sec % 3600  / 60  ) as u32).unwrap()
-        .with_second  ((sec % 60          ) as u32).unwrap();
+        .with_ordinal0(ord  as u32).unwrap()
+        .with_hour    (hour as u32).unwrap()
+        .with_minute  (min  as u32).unwrap()
+        .with_second  (sec  as u32).unwrap();
 
       time.format("log %Y-%m-%d_%H-%M-%S").to_string()
     }
