@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::Write;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
+use std::collections::HashMap;
 use crate::util::*;
 
 
@@ -24,20 +25,38 @@ impl Writer {
     dura_limit: Option<u64>,
     size_limit: Option<u64>
   ) -> Writer {
-    let (path, file) = new_file(
-      directory,
-      &dura_limit,
-      &size_limit);
+    let mut writers = unsafe {
+      static mut WRITERS: Option<Mutex<
+        HashMap<String, Writer>>> = None;
 
-    Writer(Arc::new(Mutex::new(WriterInner {
-      directory  : directory.to_string(),
-      last_change: Instant::now(),
+      WRITERS.get_or_insert_with(
+        || Mutex::new(HashMap::new())
+      ).lock().unwrap()
+    };
+
+    let directory = directory.to_string();
+
+    if let Some(writer) = writers.get(&directory) {
+      return writer.clone();
+    }
+
+    let (path, file) = new_file(
+      &directory,
+      dura_limit.as_ref(),
+      size_limit.as_ref());
+
+    let writer = Writer(Arc::new(Mutex::new(WriterInner {
+      directory  : directory.clone(),
       char_count : 0,
+      last_change: Instant::now(),
       file,
       path,
       dura_limit,
       size_limit,
-    })))
+    })));
+
+    writers.insert(directory, writer.clone());
+    writer
   }
 }
 
@@ -66,8 +85,8 @@ impl WriterInner {
 
     (self.path, self.file) = new_file(
       &self.directory,
-      &self.dura_limit,
-      &self.size_limit);
+      self.dura_limit.as_ref(),
+      self.size_limit.as_ref());
   }
 
   pub fn write(&mut self, message: &str) {

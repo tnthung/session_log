@@ -2,7 +2,7 @@ use std::fs::{File, create_dir_all};
 use chrono::{Datelike, Timelike};
 
 
-pub fn new_file_name(duration: &Option<u64>, size: &Option<u64>) -> String {
+pub fn new_file_name(duration: Option<&u64>, size: Option<&u64>) -> String {
   let base_name = match duration {
     Some(d) => {
       let time = chrono::Local::now();
@@ -58,8 +58,8 @@ pub fn new_file_name(duration: &Option<u64>, size: &Option<u64>) -> String {
 
 pub fn new_file(
   directory: &str,
-  duration : &Option<u64>,
-  size     : &Option<u64>,
+  duration : Option<&u64>,
+  size     : Option<&u64>,
 ) -> (String, File) {
   create_dir_all(directory).unwrap();
 
