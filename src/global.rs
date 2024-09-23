@@ -43,6 +43,7 @@ impl Global {
   }
 
   /// Create a session from the global logger without constructing a new logger first.
+  #[track_caller]
   pub fn session(name: &str, session: &str, silent: bool) -> Session {
     Self::new(name).session(session, silent)
   }
