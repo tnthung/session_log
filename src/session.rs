@@ -53,7 +53,7 @@ impl Session {
       parent,
     ) = match source {
       SessionSrc::Logger(l) => (
-        Source::new(&l.name),
+        Source::new(&l.name).session(name),
         l.writer.clone(),
         l.for_write,
         l.for_print,
