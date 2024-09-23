@@ -63,7 +63,7 @@ impl LoggableInner for Logger {
 
     if level >= self.write_level {
       self.writer.lock().unwrap()
-        .write(&(self.for_write)(&ctx));
+        .write((self.for_write)(&ctx));
     }
   }
 }

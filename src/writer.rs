@@ -78,11 +78,13 @@ impl WriterInner {
     (self.path, self.file) = self.config.new_file();
   }
 
-  pub fn write(&mut self, message: &str) {
+  pub fn write(&mut self, message: String) {
     self.check_rotate();
 
-    writeln!(self.file, "{message}").unwrap();
-    self.char_count += message.len() as u64;
+    self.file.write_all(message.as_bytes()).unwrap();
+    self.file.write_all(b"\n").unwrap();
+
+    self.char_count += (message.len() + 1) as u64;
   }
 }
 

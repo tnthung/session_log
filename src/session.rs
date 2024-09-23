@@ -170,7 +170,7 @@ impl Drop for Session {
 
       None => {
         self.writer.lock().unwrap()
-          .write(&lines.join("\n"));
+          .write(lines.join("\n"));
       }
     }
   }
