@@ -101,6 +101,17 @@ impl Session {
   pub fn session(&self, name: &str, silent: bool) -> Self {
     Self::new(name, SessionSrc::Session(self), silent)
   }
+
+  /// Create a new session from the session and execute the callable with the session passed in.
+  ///
+  /// This can be handy for isolating the environment of each callable while also providing a common
+  /// logging interface for any callable that needs to be logged.
+  #[track_caller]
+  pub fn session_then<F, T>(&self, name: &str, silent: bool, callable: F) -> T
+  where F: FnOnce(Self) -> T
+  {
+    callable(self.session(name, silent))
+  }
 }
 
 
