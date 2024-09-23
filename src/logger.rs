@@ -27,11 +27,7 @@ impl Logger {
       name       : name.into(),
       write_level: config.write_level,
       print_level: config.print_level,
-      writer     : Writer::new(
-        &config.directory,
-        config.duration_limit,
-        config.size_limit,
-      ),
+      writer     : Writer::new(config),
       for_write  : F::for_write,
       for_print  : F::for_print,
     }

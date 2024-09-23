@@ -1,5 +1,4 @@
 mod macros;
-mod util;          use util     ::*;
 mod writer;        use writer   ::*;
 mod output;    pub use output   ::*;
 mod time;      pub use time     ::*;
