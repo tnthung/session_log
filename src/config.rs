@@ -21,6 +21,9 @@ pub struct Config {
   /// The prefix of the log file. The log file will be named as `{prefix} {date}_{time}.log`.
   /// If the field is None, the log file will be named as `{date}_{time}.log`. Error of unable to
   /// create the log file with the unsupported character in prefix is not handled.
+  ///
+  /// If one logger having no `prefix`, `size_limit` and `duration_limit` the file name will always
+  /// be `log.log`.
   pub file_prefix: Option<String>,
 
   /// The size limit of the log file. When the file size exceeds this limit, the file will be rotated.
