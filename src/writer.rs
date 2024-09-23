@@ -21,17 +21,19 @@ pub struct WriterInner {
 impl Writer {
   pub fn new(config: Config) -> Writer {
     let mut writers = unsafe {
-      static mut WRITERS: Option<Mutex<
-        HashMap<String, Writer>>> = None;
+      static mut WRITERS: Option<Mutex<HashMap<
+        (String, Option<String>), Writer>>> = None;
 
       WRITERS.get_or_insert_with(
         || Mutex::new(HashMap::new())
       ).lock().unwrap()
     };
 
-    let directory = config.directory.clone();
+    let key = (
+      config.directory  .clone(),
+      config.file_prefix.clone());
 
-    if let Some(writer) = writers.get(&directory) {
+    if let Some(writer) = writers.get(&key) {
       return writer.clone();
     }
 
@@ -45,7 +47,7 @@ impl Writer {
       config,
     })));
 
-    writers.insert(directory, writer.clone());
+    writers.insert(key, writer.clone());
     writer
   }
 }

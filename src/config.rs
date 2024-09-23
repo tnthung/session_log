@@ -12,7 +12,10 @@ pub struct Config {
   /// The level that the logger will accept for printing to the console.
   pub print_level: Level,
 
-  /// The directory where the log files will be stored.
+  /// The directory where the log files will be stored. The directory along with prefix will be used
+  /// as a key for getting the writer. If 2 logger having same `directory` and `file_prefix`, the writer
+  /// will be the same one regardless of if limits are different. This is to prevent multiple writers
+  /// working on the same file.
   pub directory: String,
 
   /// The prefix of the log file. The log file will be named as `{prefix} {date}_{time}.log`.
