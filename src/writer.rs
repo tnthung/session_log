@@ -97,7 +97,8 @@ impl Config {
         s +=  time.minute () as u64      * 60;
         s +=  time.second () as u64;
 
-        let s = s / d * d;
+        // Align the time to the nearest duration.
+        if d > 1 { s = s / d * d; }
 
         let (o, r) = (s / 86400, s % 86400);
         let (h, r) = (r / 3600 , r % 3600 );
