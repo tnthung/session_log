@@ -24,10 +24,11 @@ pub struct Config {
   pub file_prefix: Option<String>,
 
   /// The size limit of the log file. When the file size exceeds this limit, the file will be rotated.
+  /// If the 0 is set, the file will never be rotated by size.
   pub size_limit: Option<u64>,
 
   /// The duration limit in seconds of the log file. When the file duration exceeds this limit, the
-  /// file will be rotated.
+  /// file will be rotated. If the 0 is set, the file will never be rotated by duration.
   pub duration_limit: Option<u64>,
 }
 

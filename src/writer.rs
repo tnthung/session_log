@@ -67,8 +67,8 @@ impl WriterInner {
     let char_count = self.char_count;
     let elapsed    = self.last_change.elapsed().as_secs();
     let rotate     =
-      matches!(self.config.size_limit    , Some(limit) if char_count >= limit) ||
-      matches!(self.config.duration_limit, Some(limit) if elapsed    >= limit);
+      matches!(self.config.size_limit    , Some(limit) if limit != 0 && char_count >= limit) ||
+      matches!(self.config.duration_limit, Some(limit) if limit != 0 && elapsed    >= limit);
 
     if !rotate { return; }
 
