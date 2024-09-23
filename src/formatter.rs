@@ -69,7 +69,7 @@ impl Formatter for DefaultFormatter {
         source.for_print(&mut string);
         write!(string, " - ").unwrap();
         location.for_print(&mut string);
-        write!(string, " - Session End ({}us)", elapsed.as_micros()).unwrap();
+        write!(string, " - Session End ({:?})", elapsed).unwrap();
       }
 
       Context::Message { time, source, location, level, message, .. } => {

@@ -140,7 +140,7 @@ impl Drop for Session {
     }
 
     lines.push(format!("┃ Session: {}", self.name));
-    lines.push(format!("┃ Elapsed: {}", footer.elapsed().unwrap().as_micros()));
+    lines.push(format!("┃ Elapsed: {:?}", footer.elapsed().unwrap()));
     lines.push("┃".to_string());
 
     ctxs.push(Ctx::Context(footer));

@@ -1,3 +1,10 @@
+# 0.3.7
+
+## Changed
+
+- Use the debug format of `Duration` for `Session` elapsed time.
+
+
 # 0.3.6
 
 ## Fixed
