@@ -92,7 +92,6 @@ impl Config {
         let time = chrono::Local::now();
 
         let mut s = 0;
-
         s += (time.ordinal() as u64 - 1) * 86400;
         s +=  time.hour   () as u64      * 3600;
         s +=  time.minute () as u64      * 60;
@@ -104,15 +103,24 @@ impl Config {
         let (h, r) = (r / 3600 , r % 3600 );
         let (m, s) = (r / 60   , r % 60   );
 
-        time
+        let time = time
           .with_ordinal0(o as u32).unwrap()
           .with_hour    (h as u32).unwrap()
           .with_minute  (m as u32).unwrap()
           .with_second  (s as u32).unwrap()
-          .format("log %Y-%m-%d_%H-%M-%S").to_string()
+          .format("%Y-%m-%d_%H-%M-%S");
+
+        if let Some(ref prefix) = self.file_prefix {
+          format!("{prefix} {time}")
+        }
+
+        else {
+          format!("{time}")
+        }
       }
 
-      None => "log".to_string()
+      None => self.file_prefix.clone()
+        .unwrap_or("log".to_string())
     };
 
     match self.size_limit {
