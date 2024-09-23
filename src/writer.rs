@@ -4,6 +4,8 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 use std::collections::HashMap;
 use std::fs::{File, create_dir_all};
+use std::time::Duration;
+use std::thread::{sleep, spawn};
 use chrono::{Datelike, Timelike};
 
 
@@ -15,6 +17,10 @@ pub struct WriterInner {
   pub path       : String,
   pub last_change: Instant,
   pub char_count : u64,
+
+  #[cfg(feature = "batch")] pub buffer: String,
+  #[cfg(feature = "batch")] pub kill  : bool,
+  #[cfg(feature = "batch")] pub died  : bool,
 }
 
 
@@ -39,13 +45,44 @@ impl Writer {
 
     let (path, file) = config.new_file();
 
+    #[cfg(feature = "batch")]
+    let interval = Duration::from_millis(
+      if config.batch_interval == 0 { 1 }
+      else { config.batch_interval });
+
     let writer = Writer(Arc::new(Mutex::new(WriterInner {
       char_count : 0,
       last_change: Instant::now(),
+
+      #[cfg(feature = "batch")] buffer: String::with_capacity(2 * config.batch_size as usize),
+      #[cfg(feature = "batch")] kill  : false,
+      #[cfg(feature = "batch")] died  : false,
+
       file,
       path,
       config,
     })));
+
+    #[cfg(feature = "batch")] {
+      let writer = writer.clone();
+      spawn(move || {
+        loop {
+          {
+            let mut writer = writer.lock().unwrap();
+
+            if writer.kill {
+              writer.died = true;
+              writer.write_batch();
+              break;
+            }
+
+            writer.write_batch();
+          }
+
+          sleep(interval);
+        }
+      });
+    }
 
     writers.insert(key, writer.clone());
     writer
@@ -78,6 +115,7 @@ impl WriterInner {
     (self.path, self.file) = self.config.new_file();
   }
 
+  #[cfg(not(feature = "batch"))]
   pub fn write(&mut self, message: String) {
     self.check_rotate();
 
@@ -85,6 +123,45 @@ impl WriterInner {
     self.file.write_all(b"\n").unwrap();
 
     self.char_count += (message.len() + 1) as u64;
+  }
+
+  #[cfg(feature = "batch")]
+  pub fn write(&mut self, message: String) {
+    self.buffer.push_str(&message);
+    self.buffer.push('\n');
+
+    if self.buffer.len() >= self.config.batch_size as usize {
+      self.write_batch();
+    }
+  }
+
+  #[cfg(feature = "batch")]
+  fn write_batch(&mut self) {
+    self.check_rotate();
+
+    if self.buffer.is_empty() { return; }
+
+    self.file.write_all(self.buffer.as_bytes()).unwrap();
+    self.char_count += self.buffer.len() as u64;
+
+    self.buffer.clear();
+  }
+}
+
+
+#[cfg(feature = "batch")]
+impl Drop for Writer {
+  fn drop(&mut self) {
+    // minimum strong count is 3 because:
+    //   HashMap + Worker Thread + Last Writer
+    if Arc::strong_count(&self.0) != 3 { return; }
+
+    // Stop the writer thread.
+    self.lock().unwrap().kill = true;
+
+    // Wait for the writer thread to finish.
+    while !self.lock().unwrap().died {
+      sleep(Duration::from_millis(1)); }
   }
 }
 

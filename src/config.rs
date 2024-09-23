@@ -43,6 +43,20 @@ pub struct Config {
   /// The duration limit in seconds of the log file. When the file duration exceeds this limit, the
   /// file will be rotated. If the 0 is set, the file will never be rotated by duration.
   pub duration_limit: Option<u64>,
+
+  /// The maximum size in bytes of one batch of logs. If the 0 is set, the logs will be written
+  /// immediately.
+  ///
+  /// Default: `1024`
+  #[cfg(feature = "batch")]
+  pub batch_size: u64,
+
+  /// The interval in milliseconds between each batch write. If the 0 is set, the value will be set
+  /// to 1 millisecond to automatically.
+  ///
+  /// Default: `100`
+  #[cfg(feature = "batch")]
+  pub batch_interval: u64,
 }
 
 
@@ -53,6 +67,9 @@ static DEFAULT_CONFIG: Lazy<Arc<Mutex<Config>>> = Lazy::new(|| Arc::new(Mutex::n
   file_prefix   : None,
   size_limit    : Some(10 * 1024 * 1024),
   duration_limit: Some(60 * 60),
+
+  #[cfg(feature = "batch")] batch_size    : 1024,
+  #[cfg(feature = "batch")] batch_interval: 100,
 })));
 
 
@@ -67,6 +84,9 @@ impl Default for Config {
       file_prefix   : config.file_prefix.clone(),
       size_limit    : config.size_limit,
       duration_limit: config.duration_limit,
+
+      #[cfg(feature = "batch")] batch_size    : config.batch_size,
+      #[cfg(feature = "batch")] batch_interval: config.batch_interval,
     }
   }
 }
@@ -81,5 +101,10 @@ impl Config {
     default.file_prefix    = config.file_prefix;
     default.size_limit     = config.size_limit;
     default.duration_limit = config.duration_limit;
+
+    #[cfg(feature = "batch")] {
+      default.batch_size     = config.batch_size;
+      default.batch_interval = config.batch_interval;
+    }
   }
 }
