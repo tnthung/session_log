@@ -1,3 +1,10 @@
+# 0.3.6
+
+## Fixed
+
+- `Session::log` was not correctly formatted the log message for writing.
+
+
 # 0.3.5
 
 ## Fixed

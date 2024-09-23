@@ -161,7 +161,7 @@ impl Drop for Session {
         }
 
         Ctx::Context(ctx) => {
-          for line in (self.for_print)(&ctx).split('\n') {
+          for line in (self.for_write)(&ctx).split('\n') {
             lines.push(format!("┃ {line}"));
           }
         }
