@@ -7,15 +7,21 @@ use std::sync::{Arc, Mutex};
 #[derive(Debug, Clone)]
 pub struct Config {
   /// The level that the logger will accept for writing to a file.
+  ///
+  /// Default: `Level::Info`
   pub write_level: Level,
 
   /// The level that the logger will accept for printing to the console.
+  ///
+  /// Default: `Level::Info`
   pub print_level: Level,
 
   /// The directory where the log files will be stored. The directory along with prefix will be used
   /// as a key for getting the writer. If 2 logger having same `directory` and `file_prefix`, the writer
   /// will be the same one regardless of if limits are different. This is to prevent multiple writers
   /// working on the same file.
+  ///
+  /// Default: `./logs`
   pub directory: String,
 
   /// The prefix of the log file. The log file will be named as `{prefix} {date}_{time}.log`.
@@ -24,10 +30,14 @@ pub struct Config {
   ///
   /// If one logger having no `prefix`, `size_limit` and `duration_limit` the file name will always
   /// be `log.log`.
+  ///
+  /// Default: `None`
   pub file_prefix: Option<String>,
 
-  /// The size limit of the log file. When the file size exceeds this limit, the file will be rotated.
-  /// If the 0 is set, the file will never be rotated by size.
+  /// The size limit in bytes of the log file. When the file size exceeds this limit, the file will
+  /// be rotated. If the 0 is set, the file will never be rotated by size.
+  ///
+  /// Default: `10 * 1024 * 1024`
   pub size_limit: Option<u64>,
 
   /// The duration limit in seconds of the log file. When the file duration exceeds this limit, the
