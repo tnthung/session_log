@@ -18,33 +18,35 @@ static GLOBAL: Lazy<Mutex<HashMap<Arc<str>, Global>>> = Lazy::new(|| Mutex::new(
 impl Global {
   /// Get a logger with the given name. If the logger does not exist, a new logger will be created and
   /// registered with the given name & default configurations.
-  pub fn new(name: &str) -> Self {
+  pub fn new(name: impl Into<String>) -> Self {
+    let name: String = name.into();
     let mut map = GLOBAL.lock().unwrap();
 
-    if let Some(logger) = map.get(name) {
+    if let Some(logger) = map.get(name.as_str()) {
       return logger.clone();
     }
 
-    let logger = Self(Arc::new(Logger::default(name)));
+    let logger = Self(Arc::new(Logger::default(&name)));
     map.insert(name.into(), logger.clone());
     logger
   }
 
   /// Register a logger with the given name.
-  pub fn register<F: Formatter>(name: &str, config: Config) -> Self {
-    let logger = Self(Arc::new(Logger::new::<F>(name, config)));
+  pub fn register<F: Formatter>(name: impl Into<String>, config: Config) -> Self {
+    let name: String = name.into();
+    let logger = Self(Arc::new(Logger::new::<F>(&name, config)));
     GLOBAL.lock().unwrap().insert(name.into(), logger.clone());
     logger
   }
 
   /// Unregister a logger with the given name. Logger will be dropped if no other reference exists.
-  pub fn unregister(name: &str) {
-    GLOBAL.lock().unwrap().remove(name);
+  pub fn unregister(name: impl AsRef<str>) {
+    GLOBAL.lock().unwrap().remove(name.as_ref());
   }
 
   /// Create a session from the global logger without constructing a new logger first.
   #[track_caller]
-  pub fn session(name: &str, session: &str, silent: bool) -> Session {
+  pub fn session(name: impl Into<String>, session: impl Into<String>, silent: bool) -> Session {
     Self::new(name).session(session, silent)
   }
 
@@ -53,7 +55,7 @@ impl Global {
   /// This can be handy for isolating the environment of each callable while also providing a common
   /// logging interface for any callable that needs to be logged.
   #[track_caller]
-  pub fn session_then<F, T>(&self, name: &str, silent: bool, callable: F) -> T
+  pub fn session_then<F, T>(&self, name: impl Into<String>, silent: bool, callable: F) -> T
   where F: FnOnce(Session) -> T
   {
     callable(self.session(name, silent))

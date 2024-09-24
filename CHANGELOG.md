@@ -3,6 +3,7 @@
 ## Changed
 
 - Use the debug format of `Duration` for `Session` elapsed time.
+- Use more forgiving type `impl Into<String>` and `impl AsRef<str>` for string arguments.
 
 ## Fixed
 

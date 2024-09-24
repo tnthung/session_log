@@ -43,7 +43,7 @@ impl Logger {
   /// Due to the uncertainty of if the session will log anything, the header will be deferred until
   /// the first log. If the session logged anything, it'll act like a non-silent session.
   #[track_caller]
-  pub fn session(&self, name: &str, silent: bool) -> Session {
+  pub fn session(&self, name: impl Into<String>, silent: bool) -> Session {
     Session::new(name, SessionSrc::Logger(self), silent)
   }
 
@@ -52,7 +52,7 @@ impl Logger {
   /// This can be handy for isolating the environment of each callable while also providing a common
   /// logging interface for any callable that needs to be logged.
   #[track_caller]
-  pub fn session_then<F, T>(&self, name: &str, silent: bool, callable: F) -> T
+  pub fn session_then<F, T>(&self, name: impl Into<String>, silent: bool, callable: F) -> T
   where F: FnOnce(Session) -> T
   {
     callable(self.session(name, silent))

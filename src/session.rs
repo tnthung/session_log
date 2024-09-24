@@ -42,7 +42,9 @@ pub struct Session {
 
 impl Session {
   #[track_caller]
-  pub(crate) fn new(name: &str, source: SessionSrc<'_>, silent: bool) -> Self {
+  pub(crate) fn new(name: impl Into<String>, source: SessionSrc<'_>, silent: bool) -> Self {
+    let name = name.into();
+
     let (
       source,
       writer,
@@ -53,7 +55,7 @@ impl Session {
       parent,
     ) = match source {
       SessionSrc::Logger(l) => (
-        Source::new(&l.name).session(name),
+        Source::new(&l.name).session(&name),
         l.writer.clone(),
         l.for_write,
         l.for_print,
@@ -63,7 +65,7 @@ impl Session {
       ),
 
       SessionSrc::Session(s) => (
-        s.source.session(name),
+        s.source.session(&name),
         s.writer.clone(),
         s.for_write,
         s.for_print,
@@ -79,10 +81,10 @@ impl Session {
     }
 
     Self {
-      name: name.to_string(),
       ctxs: Arc::new(Mutex::new(
         vec![Ctx::Context(header)])),
       silent: Mutex::new(silent),
+      name,
       parent,
       source,
       writer,
@@ -98,7 +100,7 @@ impl Session {
   /// This is useful when you want to create a sub-session from a session. The sub-session will later
   /// be nested under the parent session when written.
   #[track_caller]
-  pub fn session(&self, name: &str, silent: bool) -> Self {
+  pub fn session(&self, name: impl Into<String>, silent: bool) -> Self {
     Self::new(name, SessionSrc::Session(self), silent)
   }
 
@@ -107,7 +109,7 @@ impl Session {
   /// This can be handy for isolating the environment of each callable while also providing a common
   /// logging interface for any callable that needs to be logged.
   #[track_caller]
-  pub fn session_then<F, T>(&self, name: &str, silent: bool, callable: F) -> T
+  pub fn session_then<F, T>(&self, name: impl Into<String>, silent: bool, callable: F) -> T
   where F: FnOnce(Self) -> T
   {
     callable(self.session(name, silent))
