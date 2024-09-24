@@ -217,8 +217,8 @@ for i in 0..3 {
     let session = logger.session(&format!("thread {i}"), true);
     threads.push(spawn(move || {
         for j in 0..5 {
-        session.info(&format!("{j} hello"));
-        sleep(Duration::from_secs(1));
+            session.info(&format!("{j} hello"));
+            sleep(Duration::from_secs(1));
         }
     }));
 }
@@ -249,9 +249,9 @@ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 0 - src\lib.rs:55 - 3 hello
 YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 2 - src\lib.rs:55 - 4 hello
 YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 1 - src\lib.rs:55 - 4 hello
 YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 0 - src\lib.rs:55 - 4 hello
-YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 2 - src\lib.rs:52 - Session End (5005836us)
-YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 1 - src\lib.rs:52 - Session End (5006587us)
-YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 0 - src\lib.rs:52 - Session End (5008077us)
+YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 2 - src\lib.rs:52 - Session End (5.0018507s)
+YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 1 - src\lib.rs:52 - Session End (5.0018858s)
+YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 0 - src\lib.rs:52 - Session End (5.0023585s)
 ```
 
 From this look it's still interleaved, but when the file is actually written:
@@ -260,41 +260,41 @@ From this look it's still interleaved, but when the file is actually written:
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ┃ Logger : logger
 ┃ Session: thread 2
-┃ Elapsed: 5005836
+┃ Elapsed: 5.0018507s
 ┃
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 2 - src\lib.rs:52 - Session Start
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 2 - src\lib.rs:55 - 0 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 2 - src\lib.rs:55 - 1 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 2 - src\lib.rs:55 - 2 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 2 - src\lib.rs:55 - 3 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 2 - src\lib.rs:55 - 4 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 2 - src\lib.rs:52 - Session End (5005836us)
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     src\lib.rs:55 - Session Start
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 0 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 1 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 2 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 3 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 4 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     src\lib.rs:55 - Session End
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ┃ Logger : logger
 ┃ Session: thread 1
-┃ Elapsed: 5006587
+┃ Elapsed: 5.0018858s
 ┃
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 1 - src\lib.rs:52 - Session Start
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 1 - src\lib.rs:55 - 0 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 1 - src\lib.rs:55 - 1 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 1 - src\lib.rs:55 - 2 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 1 - src\lib.rs:55 - 3 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 1 - src\lib.rs:55 - 4 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 1 - src\lib.rs:52 - Session End (5006587us)
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     src\lib.rs:55 - Session Start
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 0 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 1 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 2 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 3 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 4 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     src\lib.rs:55 - Session End
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ┃ Logger : logger
 ┃ Session: thread 0
-┃ Elapsed: 5008077
+┃ Elapsed: 5.0023585s
 ┃
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 0 - src\lib.rs:52 - Session Start
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 0 - src\lib.rs:55 - 0 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 0 - src\lib.rs:55 - 1 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 0 - src\lib.rs:55 - 2 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 0 - src\lib.rs:55 - 3 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] logger:thread 0 - src\lib.rs:55 - 4 hello
-┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     logger:thread 0 - src\lib.rs:52 - Session End (5008077us)
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     src\lib.rs:55 - Session Start
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 0 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 1 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 2 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 3 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ [I] src\lib.rs:58 - 4 hello
+┃ YYYY-MM-DDTHH:mm:ss.ssssss+ZZ:ZZ     src\lib.rs:55 - Session End
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 

@@ -4,6 +4,10 @@
 
 - Use the debug format of `Duration` for `Session` elapsed time.
 
+## Fixed
+
+- `README.md` use the correct version of `Session` writing in the example.
+
 
 # 0.3.6
 
