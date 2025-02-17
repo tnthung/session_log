@@ -33,8 +33,8 @@ impl Output for Level {
   #[cfg(feature = "color")]
   fn for_print(&self, f: &mut impl std::fmt::Write) {
     match self {
-      Level::Verbose  => write!(f, "\x1b[37m[V]\x1b[0m"),        // white
-      Level::Debug    => write!(f, "\x1b[90m[D]\x1b[0m"),        // gray
+      Level::Verbose  => write!(f, "\x1b[90m[V]\x1b[0m"),        // gray
+      Level::Debug    => write!(f, "\x1b[37m[D]\x1b[0m"),        // white
       Level::Info     => write!(f, "\x1b[32m[I]\x1b[0m"),        // green
       Level::Warning  => write!(f, "\x1b[33m[W]\x1b[0m"),        // yellow
       Level::Critical => write!(f, "\x1b[38;5;208m[C]\x1b[0m"),  // orange
