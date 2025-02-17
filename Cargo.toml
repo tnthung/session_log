@@ -9,7 +9,6 @@ description = "A simple session log library for Rust."
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-uuid      = "1.13.1"
 chrono    = "0.4.39"
 once_cell = "1.20.3"
 

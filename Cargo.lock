@@ -147,7 +147,6 @@ version = "0.4.0"
 dependencies = [
  "chrono",
  "once_cell",
- "uuid",
 ]
 
 [[package]]
@@ -172,12 +171,6 @@ name = "unicode-ident"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
-
-[[package]]
-name = "uuid"
-version = "1.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ced87ca4be083373936a67f8de945faa23b6b42384bd5b64434850802c6dccd0"
 
 [[package]]
 name = "wasm-bindgen"
