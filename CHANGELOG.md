@@ -1,3 +1,10 @@
+# 0.4.1
+
+## Fix
+
+- `UUID` is now removed as dependency.
+
+
 # 0.4.0
 
 ## Breaking
