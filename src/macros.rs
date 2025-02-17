@@ -1,6 +1,18 @@
 
 
 #[macro_export]
+macro_rules! glog_verbose {
+  ($name:expr, $($t:tt)*) => {
+    {
+      use $crate::*;
+      Global::new($name)
+        .verbose(&format!($($t)*))
+    }
+  };
+}
+
+
+#[macro_export]
 macro_rules! glog_debug {
   ($name:expr, $($t:tt)*) => {
     {
@@ -11,16 +23,6 @@ macro_rules! glog_debug {
   };
 }
 
-#[macro_export]
-macro_rules! glog_verbose {
-  ($name:expr, $($t:tt)*) => {
-    {
-      use $crate::*;
-      Global::new($name)
-        .verbose(&format!($($t)*))
-    }
-  };
-}
 
 #[macro_export]
 macro_rules! glog_info {
@@ -83,22 +85,22 @@ macro_rules! glog_fatal {
 
 
 #[macro_export]
-macro_rules! log_debug {
+macro_rules! log_verbose {
   ($loggable:expr, $($t:tt)*) => {
     {
       use $crate::*;
-      $loggable.debug(&format!($($t)*))
+      $loggable.verbose(&format!($($t)*))
     }
   };
 }
 
 
 #[macro_export]
-macro_rules! log_verbose {
+macro_rules! log_debug {
   ($loggable:expr, $($t:tt)*) => {
     {
       use $crate::*;
-      $loggable.verbose(&format!($($t)*))
+      $loggable.debug(&format!($($t)*))
     }
   };
 }

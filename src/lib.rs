@@ -18,8 +18,8 @@ pub mod prelude {
   pub use crate::{
     Loggable,
     Logger,
-    log_debug,
     log_verbose,
+    log_debug,
     log_info,
     log_warning,
     log_critical,
@@ -31,8 +31,8 @@ pub mod prelude {
 
 pub mod glog {
   pub use crate::{
-    glog_debug,
     glog_verbose,
+    glog_debug,
     glog_info,
     glog_warning,
     glog_critical,

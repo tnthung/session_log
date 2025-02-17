@@ -27,16 +27,16 @@ pub trait Loggable: LoggableInner + Send + Sync {
   fn print_level(&self) -> Level;
 
 
-  /// Log a message with debug level.
-  #[track_caller]
-  fn debug(&self, message: &str) {
-    self.log(Level::Debug, message);
-  }
-
   /// Log a message with verbose level.
   #[track_caller]
   fn verbose(&self, message: &str) {
     self.log(Level::Verbose, message);
+  }
+
+  /// Log a message with debug level.
+  #[track_caller]
+  fn debug(&self, message: &str) {
+    self.log(Level::Debug, message);
   }
 
   /// Log a message with info level.
