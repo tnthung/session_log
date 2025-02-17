@@ -1,3 +1,10 @@
+# 0.4.0
+
+## Breaking
+
+- The `Verbose` level is now lower than `Debug` level. Essentially, `Verbose` is now the `Trace` level.
+
+
 # 0.3.7
 
 ## Changed
