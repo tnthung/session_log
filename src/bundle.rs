@@ -1,5 +1,4 @@
 use crate::components::*;
-use std::fmt::Write;
 
 
 /// A bundle is a fixed set of components that are used to create single record in the log. `write`
@@ -10,10 +9,10 @@ use std::fmt::Write;
 /// `Bundle` trait manually.
 pub trait Bundle {
   /// Format the bundle to the writer for writing to a file.
-  fn write(&self, f: &mut impl Write);
+  fn write(&self, f: &mut impl std::fmt::Write);
 
   /// Format the bundle to the writer for printing to the console. By default, it calls `write`.
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.write(f);
   }
 }
@@ -50,7 +49,7 @@ impl<T: Into<String>> ToBundle for T {
 
 
 impl Bundle for () {
-  fn write(&self, _: &mut impl Write) {}
+  fn write(&self, _: &mut impl std::fmt::Write) {}
 }
 
 
@@ -58,11 +57,11 @@ impl<A> Bundle for (A,)
 where
   A: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0.print(f);
   }
 }
@@ -73,12 +72,12 @@ where
   A: Component,
   B: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0.write(f); write!(f, " ").unwrap();
     self.1.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0.print(f); write!(f, " ").unwrap();
     self.1.print(f);
   }
@@ -91,13 +90,13 @@ where
   B: Component,
   C: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0.write(f); write!(f, " ").unwrap();
     self.1.write(f); write!(f, " ").unwrap();
     self.2.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0.print(f); write!(f, " ").unwrap();
     self.1.print(f); write!(f, " ").unwrap();
     self.2.print(f);
@@ -112,14 +111,14 @@ where
   C: Component,
   D: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0.write(f); write!(f, " ").unwrap();
     self.1.write(f); write!(f, " ").unwrap();
     self.2.write(f); write!(f, " ").unwrap();
     self.3.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0.print(f); write!(f, " ").unwrap();
     self.1.print(f); write!(f, " ").unwrap();
     self.2.print(f); write!(f, " ").unwrap();
@@ -136,7 +135,7 @@ where
   D: Component,
   E: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0.write(f); write!(f, " ").unwrap();
     self.1.write(f); write!(f, " ").unwrap();
     self.2.write(f); write!(f, " ").unwrap();
@@ -144,7 +143,7 @@ where
     self.4.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0.print(f); write!(f, " ").unwrap();
     self.1.print(f); write!(f, " ").unwrap();
     self.2.print(f); write!(f, " ").unwrap();
@@ -163,7 +162,7 @@ where
   E: Component,
   F: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0.write(f); write!(f, " ").unwrap();
     self.1.write(f); write!(f, " ").unwrap();
     self.2.write(f); write!(f, " ").unwrap();
@@ -172,7 +171,7 @@ where
     self.5.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0.print(f); write!(f, " ").unwrap();
     self.1.print(f); write!(f, " ").unwrap();
     self.2.print(f); write!(f, " ").unwrap();
@@ -193,7 +192,7 @@ where
   F: Component,
   G: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0.write(f); write!(f, " ").unwrap();
     self.1.write(f); write!(f, " ").unwrap();
     self.2.write(f); write!(f, " ").unwrap();
@@ -203,7 +202,7 @@ where
     self.6.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0.print(f); write!(f, " ").unwrap();
     self.1.print(f); write!(f, " ").unwrap();
     self.2.print(f); write!(f, " ").unwrap();
@@ -226,7 +225,7 @@ where
   G: Component,
   H: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0.write(f); write!(f, " ").unwrap();
     self.1.write(f); write!(f, " ").unwrap();
     self.2.write(f); write!(f, " ").unwrap();
@@ -237,7 +236,7 @@ where
     self.7.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0.print(f); write!(f, " ").unwrap();
     self.1.print(f); write!(f, " ").unwrap();
     self.2.print(f); write!(f, " ").unwrap();
@@ -262,7 +261,7 @@ where
   H: Component,
   I: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0.write(f); write!(f, " ").unwrap();
     self.1.write(f); write!(f, " ").unwrap();
     self.2.write(f); write!(f, " ").unwrap();
@@ -274,7 +273,7 @@ where
     self.8.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0.print(f); write!(f, " ").unwrap();
     self.1.print(f); write!(f, " ").unwrap();
     self.2.print(f); write!(f, " ").unwrap();
@@ -301,7 +300,7 @@ where
   I: Component,
   J: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0.write(f); write!(f, " ").unwrap();
     self.1.write(f); write!(f, " ").unwrap();
     self.2.write(f); write!(f, " ").unwrap();
@@ -314,7 +313,7 @@ where
     self.9.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0.print(f); write!(f, " ").unwrap();
     self.1.print(f); write!(f, " ").unwrap();
     self.2.print(f); write!(f, " ").unwrap();
@@ -343,7 +342,7 @@ where
   J: Component,
   K: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0 .write(f); write!(f, " ").unwrap();
     self.1 .write(f); write!(f, " ").unwrap();
     self.2 .write(f); write!(f, " ").unwrap();
@@ -357,7 +356,7 @@ where
     self.10.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0 .print(f); write!(f, " ").unwrap();
     self.1 .print(f); write!(f, " ").unwrap();
     self.2 .print(f); write!(f, " ").unwrap();
@@ -388,7 +387,7 @@ where
   K: Component,
   L: Component,
 {
-  fn write(&self, f: &mut impl Write) {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     self.0 .write(f); write!(f, " ").unwrap();
     self.1 .write(f); write!(f, " ").unwrap();
     self.2 .write(f); write!(f, " ").unwrap();
@@ -403,7 +402,7 @@ where
     self.11.write(f);
   }
 
-  fn print(&self, f: &mut impl Write) {
+  fn print(&self, f: &mut impl std::fmt::Write) {
     self.0 .print(f); write!(f, " ").unwrap();
     self.1 .print(f); write!(f, " ").unwrap();
     self.2 .print(f); write!(f, " ").unwrap();
