@@ -10,6 +10,11 @@ pub struct Source(pub(crate) Vec<Arc<str>>);
 
 
 impl Source {
+  /// Creates a new source component.
+  pub fn new(sources: impl IntoIterator<Item = impl AsRef<str>>) -> Self {
+    Self(sources.into_iter().map(|s| s.as_ref().to_string().into()).collect())
+  }
+
   /// Push a new layer of source.
   pub fn push(&mut self, session: impl Into<String>) {
     self.0.push(session.into().into());
