@@ -8,7 +8,7 @@ pub struct Location(pub(crate) &'static str, pub(crate) u32);
 
 impl Location {
   #[track_caller]
-  pub(crate) fn new() -> Self {
+  pub fn new() -> Self {
     let loc = std::panic::Location::caller();
     Self(loc.file(), loc.line())
   }
