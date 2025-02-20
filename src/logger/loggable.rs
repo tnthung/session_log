@@ -44,8 +44,11 @@ pub trait Loggable<B: Bundle> {
   }
 
   /// Log with the fatal level.
+  ///
+  /// `Caution`: This function will **EXIT** the process.
   #[track_caller]
-  fn fatal(&mut self, message: impl ToBundle<B=B>) {
+  fn fatal(&mut self, message: impl ToBundle<B=B>) -> ! {
     self.log(Level::Fatal, message);
+    std::process::exit(1);
   }
 }
