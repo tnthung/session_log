@@ -20,6 +20,22 @@ pub trait Output {
 }
 
 
+/// Allow &Output to be used as Output.
+impl<T: Output> Output for &T {
+  fn for_write(&self, f: &mut impl std::fmt::Write) {
+    (*self).for_write(f);
+  }
+
+  fn for_print(&self, f: &mut impl std::fmt::Write) {
+    (*self).for_print(f);
+  }
+
+  fn for_print_colored(&self, f: &mut impl std::fmt::Write) {
+    (*self).for_print_colored(f);
+  }
+}
+
+
 pub(crate) trait OutputInner {
   fn write(&self, f: &mut impl std::fmt::Write);
   fn print(&self, f: &mut impl std::fmt::Write);
