@@ -1,4 +1,4 @@
-use crate::output::Output;
+use super::Component;
 
 
 /// Level enum is representing the level of message & which level the logger accepts. There are 7 that
@@ -17,8 +17,8 @@ pub enum Level {
 }
 
 
-impl Output for Level {
-  fn for_write(&self, f: &mut impl std::fmt::Write) {
+impl Component for Level {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     match self {
       Level::Verbose  => write!(f, "[V]"),
       Level::Debug    => write!(f, "[D]"),
@@ -30,7 +30,7 @@ impl Output for Level {
     }.unwrap();
   }
 
-  fn for_print_colored(&self, f: &mut impl std::fmt::Write) {
+  fn color(&self, f: &mut impl std::fmt::Write) {
     match self {
       Level::Verbose  => write!(f, "\x1b[90m[V]\x1b[0m"),        // gray
       Level::Debug    => write!(f, "\x1b[37m[D]\x1b[0m"),        // white

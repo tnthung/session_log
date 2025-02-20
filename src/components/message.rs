@@ -1,4 +1,4 @@
-use crate::output::Output;
+use super::Component;
 
 
 /// Message component is used to annotate the log message.
@@ -17,8 +17,8 @@ impl Message {
 }
 
 
-impl Output for Message {
-  fn for_write(&self, f: &mut impl std::fmt::Write) {
+impl Component for Message {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.0).unwrap();
   }
 }

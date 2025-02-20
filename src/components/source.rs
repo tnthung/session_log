@@ -1,4 +1,4 @@
-use crate::output::Output;
+use super::Component;
 use std::sync::Arc;
 
 
@@ -27,8 +27,8 @@ impl Source {
 }
 
 
-impl Output for Source {
-  fn for_write(&self, f: &mut impl std::fmt::Write) {
+impl Component for Source {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.0.join("::")).unwrap();
   }
 }

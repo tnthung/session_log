@@ -1,4 +1,4 @@
-use crate::output::Output;
+use super::Component;
 use chrono::{DateTime, Local, SecondsFormat};
 
 
@@ -28,8 +28,8 @@ impl Default for Time {
 }
 
 
-impl Output for Time {
-  fn for_write(&self, f: &mut impl std::fmt::Write) {
+impl Component for Time {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.as_formatted()).unwrap();
   }
 }

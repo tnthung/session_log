@@ -1,4 +1,4 @@
-use crate::output::Output;
+use super::Component;
 
 
 /// Location component is used to annotate which location in the source code the logging is happened.
@@ -42,8 +42,8 @@ impl Location {
 }
 
 
-impl Output for Location {
-  fn for_write(&self, f: &mut impl std::fmt::Write) {
+impl Component for Location {
+  fn write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}:{}", self.file(), self.line()).unwrap();
   }
 }
