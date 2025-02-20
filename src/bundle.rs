@@ -58,11 +58,11 @@ where
   A: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0.write(f);
+    ComponentInner::write(&self.0, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0.print(f);
+    ComponentInner::print(&self.0, f);
   }
 }
 
@@ -73,13 +73,13 @@ where
   B: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0.write(f); write!(f, " ").unwrap();
-    self.1.write(f);
+    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0.print(f); write!(f, " ").unwrap();
-    self.1.print(f);
+    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1, f);
   }
 }
 
@@ -91,15 +91,15 @@ where
   C: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0.write(f); write!(f, " ").unwrap();
-    self.1.write(f); write!(f, " ").unwrap();
-    self.2.write(f);
+    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.2, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0.print(f); write!(f, " ").unwrap();
-    self.1.print(f); write!(f, " ").unwrap();
-    self.2.print(f);
+    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.2, f);
   }
 }
 
@@ -112,17 +112,17 @@ where
   D: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0.write(f); write!(f, " ").unwrap();
-    self.1.write(f); write!(f, " ").unwrap();
-    self.2.write(f); write!(f, " ").unwrap();
-    self.3.write(f);
+    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.3, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0.print(f); write!(f, " ").unwrap();
-    self.1.print(f); write!(f, " ").unwrap();
-    self.2.print(f); write!(f, " ").unwrap();
-    self.3.print(f);
+    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.3, f);
   }
 }
 
@@ -136,19 +136,19 @@ where
   E: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0.write(f); write!(f, " ").unwrap();
-    self.1.write(f); write!(f, " ").unwrap();
-    self.2.write(f); write!(f, " ").unwrap();
-    self.3.write(f); write!(f, " ").unwrap();
-    self.4.write(f);
+    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.4, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0.print(f); write!(f, " ").unwrap();
-    self.1.print(f); write!(f, " ").unwrap();
-    self.2.print(f); write!(f, " ").unwrap();
-    self.3.print(f); write!(f, " ").unwrap();
-    self.4.print(f);
+    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.4, f);
   }
 }
 
@@ -163,21 +163,21 @@ where
   F: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0.write(f); write!(f, " ").unwrap();
-    self.1.write(f); write!(f, " ").unwrap();
-    self.2.write(f); write!(f, " ").unwrap();
-    self.3.write(f); write!(f, " ").unwrap();
-    self.4.write(f); write!(f, " ").unwrap();
-    self.5.write(f);
+    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.4, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.5, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0.print(f); write!(f, " ").unwrap();
-    self.1.print(f); write!(f, " ").unwrap();
-    self.2.print(f); write!(f, " ").unwrap();
-    self.3.print(f); write!(f, " ").unwrap();
-    self.4.print(f); write!(f, " ").unwrap();
-    self.5.print(f);
+    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.4, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.5, f);
   }
 }
 
@@ -193,23 +193,23 @@ where
   G: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0.write(f); write!(f, " ").unwrap();
-    self.1.write(f); write!(f, " ").unwrap();
-    self.2.write(f); write!(f, " ").unwrap();
-    self.3.write(f); write!(f, " ").unwrap();
-    self.4.write(f); write!(f, " ").unwrap();
-    self.5.write(f); write!(f, " ").unwrap();
-    self.6.write(f);
+    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.4, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.5, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.6, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0.print(f); write!(f, " ").unwrap();
-    self.1.print(f); write!(f, " ").unwrap();
-    self.2.print(f); write!(f, " ").unwrap();
-    self.3.print(f); write!(f, " ").unwrap();
-    self.4.print(f); write!(f, " ").unwrap();
-    self.5.print(f); write!(f, " ").unwrap();
-    self.6.print(f);
+    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.4, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.5, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.6, f);
   }
 }
 
@@ -226,25 +226,25 @@ where
   H: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0.write(f); write!(f, " ").unwrap();
-    self.1.write(f); write!(f, " ").unwrap();
-    self.2.write(f); write!(f, " ").unwrap();
-    self.3.write(f); write!(f, " ").unwrap();
-    self.4.write(f); write!(f, " ").unwrap();
-    self.5.write(f); write!(f, " ").unwrap();
-    self.6.write(f); write!(f, " ").unwrap();
-    self.7.write(f);
+    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.4, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.5, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.6, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.7, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0.print(f); write!(f, " ").unwrap();
-    self.1.print(f); write!(f, " ").unwrap();
-    self.2.print(f); write!(f, " ").unwrap();
-    self.3.print(f); write!(f, " ").unwrap();
-    self.4.print(f); write!(f, " ").unwrap();
-    self.5.print(f); write!(f, " ").unwrap();
-    self.6.print(f); write!(f, " ").unwrap();
-    self.7.print(f);
+    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.4, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.5, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.6, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.7, f);
   }
 }
 
@@ -262,27 +262,27 @@ where
   I: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0.write(f); write!(f, " ").unwrap();
-    self.1.write(f); write!(f, " ").unwrap();
-    self.2.write(f); write!(f, " ").unwrap();
-    self.3.write(f); write!(f, " ").unwrap();
-    self.4.write(f); write!(f, " ").unwrap();
-    self.5.write(f); write!(f, " ").unwrap();
-    self.6.write(f); write!(f, " ").unwrap();
-    self.7.write(f); write!(f, " ").unwrap();
-    self.8.write(f);
+    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.4, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.5, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.6, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.7, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.8, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0.print(f); write!(f, " ").unwrap();
-    self.1.print(f); write!(f, " ").unwrap();
-    self.2.print(f); write!(f, " ").unwrap();
-    self.3.print(f); write!(f, " ").unwrap();
-    self.4.print(f); write!(f, " ").unwrap();
-    self.5.print(f); write!(f, " ").unwrap();
-    self.6.print(f); write!(f, " ").unwrap();
-    self.7.print(f); write!(f, " ").unwrap();
-    self.8.print(f);
+    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.4, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.5, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.6, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.7, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.8, f);
   }
 }
 
@@ -301,29 +301,29 @@ where
   J: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0.write(f); write!(f, " ").unwrap();
-    self.1.write(f); write!(f, " ").unwrap();
-    self.2.write(f); write!(f, " ").unwrap();
-    self.3.write(f); write!(f, " ").unwrap();
-    self.4.write(f); write!(f, " ").unwrap();
-    self.5.write(f); write!(f, " ").unwrap();
-    self.6.write(f); write!(f, " ").unwrap();
-    self.7.write(f); write!(f, " ").unwrap();
-    self.8.write(f); write!(f, " ").unwrap();
-    self.9.write(f);
+    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.4, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.5, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.6, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.7, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.8, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.9, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0.print(f); write!(f, " ").unwrap();
-    self.1.print(f); write!(f, " ").unwrap();
-    self.2.print(f); write!(f, " ").unwrap();
-    self.3.print(f); write!(f, " ").unwrap();
-    self.4.print(f); write!(f, " ").unwrap();
-    self.5.print(f); write!(f, " ").unwrap();
-    self.6.print(f); write!(f, " ").unwrap();
-    self.7.print(f); write!(f, " ").unwrap();
-    self.8.print(f); write!(f, " ").unwrap();
-    self.9.print(f);
+    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.2, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.3, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.4, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.5, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.6, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.7, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.8, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.9, f);
   }
 }
 
@@ -343,31 +343,31 @@ where
   K: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0 .write(f); write!(f, " ").unwrap();
-    self.1 .write(f); write!(f, " ").unwrap();
-    self.2 .write(f); write!(f, " ").unwrap();
-    self.3 .write(f); write!(f, " ").unwrap();
-    self.4 .write(f); write!(f, " ").unwrap();
-    self.5 .write(f); write!(f, " ").unwrap();
-    self.6 .write(f); write!(f, " ").unwrap();
-    self.7 .write(f); write!(f, " ").unwrap();
-    self.8 .write(f); write!(f, " ").unwrap();
-    self.9 .write(f); write!(f, " ").unwrap();
-    self.10.write(f);
+    ComponentInner::write(&self.0 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.2 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.3 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.4 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.5 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.6 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.7 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.8 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.9 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.10, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0 .print(f); write!(f, " ").unwrap();
-    self.1 .print(f); write!(f, " ").unwrap();
-    self.2 .print(f); write!(f, " ").unwrap();
-    self.3 .print(f); write!(f, " ").unwrap();
-    self.4 .print(f); write!(f, " ").unwrap();
-    self.5 .print(f); write!(f, " ").unwrap();
-    self.6 .print(f); write!(f, " ").unwrap();
-    self.7 .print(f); write!(f, " ").unwrap();
-    self.8 .print(f); write!(f, " ").unwrap();
-    self.9 .print(f); write!(f, " ").unwrap();
-    self.10.print(f);
+    ComponentInner::print(&self.0 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.2 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.3 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.4 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.5 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.6 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.7 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.8 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.9 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.10, f);
   }
 }
 
@@ -388,32 +388,32 @@ where
   L: Component,
 {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    self.0 .write(f); write!(f, " ").unwrap();
-    self.1 .write(f); write!(f, " ").unwrap();
-    self.2 .write(f); write!(f, " ").unwrap();
-    self.3 .write(f); write!(f, " ").unwrap();
-    self.4 .write(f); write!(f, " ").unwrap();
-    self.5 .write(f); write!(f, " ").unwrap();
-    self.6 .write(f); write!(f, " ").unwrap();
-    self.7 .write(f); write!(f, " ").unwrap();
-    self.8 .write(f); write!(f, " ").unwrap();
-    self.9 .write(f); write!(f, " ").unwrap();
-    self.10.write(f); write!(f, " ").unwrap();
-    self.11.write(f);
+    ComponentInner::write(&self.0 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.2 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.3 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.4 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.5 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.6 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.7 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.8 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.9 , f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.10, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.11, f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    self.0 .print(f); write!(f, " ").unwrap();
-    self.1 .print(f); write!(f, " ").unwrap();
-    self.2 .print(f); write!(f, " ").unwrap();
-    self.3 .print(f); write!(f, " ").unwrap();
-    self.4 .print(f); write!(f, " ").unwrap();
-    self.5 .print(f); write!(f, " ").unwrap();
-    self.6 .print(f); write!(f, " ").unwrap();
-    self.7 .print(f); write!(f, " ").unwrap();
-    self.8 .print(f); write!(f, " ").unwrap();
-    self.9 .print(f); write!(f, " ").unwrap();
-    self.10.print(f); write!(f, " ").unwrap();
-    self.11.print(f);
+    ComponentInner::print(&self.0 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.2 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.3 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.4 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.5 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.6 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.7 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.8 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.9 , f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.10, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.11, f);
   }
 }
