@@ -32,8 +32,4 @@ impl Output for Time {
   fn for_write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.as_formatted()).unwrap();
   }
-
-  fn for_print(&self, f: &mut impl std::fmt::Write) {
-    write!(f, "{}", self.as_formatted()).unwrap();
-  }
 }

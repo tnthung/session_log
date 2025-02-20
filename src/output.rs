@@ -6,8 +6,11 @@ pub trait Output {
   /// Writes a string representation that is suitable for writing to a file.
   fn for_write(&self, f: &mut impl std::fmt::Write);
 
-  /// Writes a string representation that is suitable for printing to the console.
-  fn for_print(&self, f: &mut impl std::fmt::Write);
+  /// Writes a string representation that is suitable for printing to the console. By default, this method
+  /// is the same as `for_write`.
+  fn for_print(&self, f: &mut impl std::fmt::Write) {
+    self.for_write(f);
+  }
 
   /// Writes a string representation that is suitable for printing to the console when the color feature
   /// is enabled. By default, this method is the same as `for_print`.
