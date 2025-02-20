@@ -15,6 +15,11 @@ impl Source {
     Self(sources.into_iter().map(|s| s.as_ref().to_string().into()).collect())
   }
 
+  /// Get the root of the source.
+  pub fn root(&self) -> Option<&str> {
+    self.0.first().map(|s| s.as_ref())
+  }
+
   /// Push a new layer of source.
   pub fn push(&mut self, session: impl Into<String>) {
     self.0.push(session.into().into());
