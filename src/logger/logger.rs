@@ -1,7 +1,7 @@
-use crate::bundle::*;
-use crate::components::*;
 use crate::file::*;
+use crate::bundle::*;
 use crate::config::*;
+use crate::components::*;
 use std::io::Write;
 use std::marker::PhantomData;
 

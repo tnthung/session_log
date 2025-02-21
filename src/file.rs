@@ -1,8 +1,8 @@
-use crate::logger::Logger;
 use crate::config::Config;
-use std::sync::{Arc, Mutex};
-use std::fs::File as StdFile;
+use crate::logger::Logger;
 use std::io::Write;
+use std::fs::File as StdFile;
+use std::sync::{Arc, Mutex};
 use chrono::{Local, Timelike};
 
 
