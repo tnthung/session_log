@@ -20,7 +20,7 @@ impl<B: Bundle> Logger<B> {
 
 impl<B: Bundle> Loggable<B> for Logger<B> {
   #[track_caller]
-  fn log(&mut self, level: Level, message: impl ToBundle<B=B>) {
+  fn log(&self, level: Level, message: impl ToBundle<B=B>) {
     let bundle = message.to_bundle(Time::default(), level, self.0.clone(), Location::new());
 
     { // writing
