@@ -2,6 +2,7 @@ pub mod components;
 pub mod bundle;
 pub mod logger;
 pub mod file;
+pub mod config;
 
 
 pub mod prelude {

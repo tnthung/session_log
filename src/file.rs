@@ -1,4 +1,5 @@
 use crate::logger::Logger;
+use crate::config::Config;
 use std::sync::{Arc, Mutex};
 use std::fs::File as StdFile;
 use std::io::Write;
@@ -217,7 +218,11 @@ impl File {
     inner.size += s.len() as u64 + 1;
   }
 
-  pub fn logger(&self, name: impl AsRef<str>) -> Logger {
-    Logger::new_with_file(name, self.clone())
+  pub fn logger(&self, name: impl AsRef<str>, config: Config) -> Logger {
+    Logger::new_with_file(name, self.clone(), config)
+  }
+
+  pub fn default_logger(&self, name: impl AsRef<str>) -> Logger {
+    Logger::new_with_file(name, self.clone(), Config::default())
   }
 }
