@@ -18,24 +18,24 @@ pub trait Bundle {
 
 
 /// Convert the type into a bundle.
-pub trait ToBundle {
+pub trait ToBundle<'a> {
   type B: Bundle;
 
   fn to_bundle(
     self,
     time    : Time,
     level   : Level,
-    source  : Source,
+    source  : Source<'a>,
     location: Location,
   ) -> Self::B;
 }
 
 
 /// The default bundle that can directly be used if no custom formatting is needed.
-pub struct DefaultBundle(Time, Level, Source, Location, Message);
+pub struct DefaultBundle<'a>(Time, Level, Source<'a>, Location, Message);
 
 
-impl Bundle for DefaultBundle {
+impl<'a> Bundle for DefaultBundle<'a> {
   fn write(&self, f: &mut impl std::fmt::Write) {
     ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
     ComponentInner::write(&self.1, f); write!(f, " - ").unwrap();
@@ -54,10 +54,10 @@ impl Bundle for DefaultBundle {
 }
 
 
-impl<T: Into<String>> ToBundle for T {
-  type B = DefaultBundle;
+impl<'a, T: Into<String>> ToBundle<'a> for T {
+  type B = DefaultBundle<'a>;
 
-  fn to_bundle(self, time: Time, level: Level, source: Source, location: Location) -> Self::B {
+  fn to_bundle(self, time: Time, level: Level, source: Source<'a>, location: Location) -> Self::B {
     DefaultBundle(time, level, source, location, Message(self.into()))
   }
 }
