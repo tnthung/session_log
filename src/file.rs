@@ -218,11 +218,13 @@ impl File {
     inner.size += s.len() as u64 + 1;
   }
 
-  pub fn logger(&self, name: impl Into<String>, config: Config) -> Logger {
+  /// Create a new logger with the given name and configuration.
+  pub fn logger<'a>(&self, name: impl Into<String>, config: Config) -> Logger<'a> {
     Logger::new_with_file(name, self.clone(), config)
   }
 
-  pub fn default_logger(&self, name: impl Into<String>) -> Logger {
+  /// Create a new logger with the given name and default configuration.
+  pub fn default_logger<'a>(&self, name: impl Into<String>) -> Logger<'a> {
     Logger::new_with_file(name, self.clone(), Config::default())
   }
 }
