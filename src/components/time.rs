@@ -1,10 +1,11 @@
 use super::Component;
+use std::sync::OnceLock;
 use chrono::{DateTime, Local, SecondsFormat};
 
 
 /// Time component is used to annotate the time when the logging is happened.
-#[derive(Debug, Clone, Copy)]
-pub struct Time(pub(crate) DateTime<Local>);
+#[derive(Debug, Clone)]
+pub struct Time(pub(crate) DateTime<Local>, OnceLock<String>);
 
 
 impl Time {
@@ -15,15 +16,15 @@ impl Time {
 
   /// Returns the formatted time string.
   /// Format: `[YYYY]-[MM]-[DD]T[HH]:[mm]:[SS.ssssss]+[ZZ:ZZ]`
-  pub fn as_formatted(&self) -> String {
-    self.0.to_rfc3339_opts(SecondsFormat::Micros, true)
+  pub fn as_formatted(&self) -> &String {
+    self.1.get_or_init(|| self.0.to_rfc3339_opts(SecondsFormat::Micros, true))
   }
 }
 
 
 impl Default for Time {
   fn default() -> Self {
-    Self(Local::now())
+    Self(Local::now(), OnceLock::new())
   }
 }
 

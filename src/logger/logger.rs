@@ -21,7 +21,8 @@ impl<'a, B: Bundle> Logger<'a, B> {
   /// Log with the specified level.
   #[track_caller]
   pub fn log(&'a self, level: Level, message: impl ToBundle<'a, B=B>) {
-    let bundle = message.to_bundle(Time::default(), level, Source(self.0.as_slice()), Location::new());
+    let bundle = message.to_bundle(Time::default(), level,
+      Source::new(self.0.as_slice()), Location::new());
 
     if self.2.write_level <= level {
       let mut s = String::new();
