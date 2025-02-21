@@ -2,3 +2,16 @@ pub mod components;
 pub mod bundle;
 pub mod logger;
 pub mod file;
+
+
+pub mod prelude {
+  pub use crate::file::FileConfig;
+  pub use crate::logger::Loggable;
+}
+
+pub mod unit {
+  pub use crate::file::{
+    KiB, MiB, GiB,  // File size
+    Day, Hr , Min,  // File duration
+  };
+}
