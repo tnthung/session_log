@@ -5,7 +5,7 @@ use chrono::{DateTime, Local, SecondsFormat};
 
 /// Time component is used to annotate the time when the logging is happened.
 #[derive(Debug, Clone)]
-pub struct Time(pub(crate) DateTime<Local>, OnceLock<String>);
+pub struct Time(pub DateTime<Local>, OnceLock<String>);
 
 
 impl Time {
