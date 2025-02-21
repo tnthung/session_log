@@ -219,10 +219,3 @@ impl File {
     Logger::new_with_file(name, self.clone())
   }
 }
-
-
-impl Default for File {
-  fn default() -> Self {
-    Self::new(FileConfig::default())
-  }
-}
