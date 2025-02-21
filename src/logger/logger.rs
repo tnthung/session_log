@@ -15,6 +15,7 @@ impl<'a, B: Bundle> Logger<'a, B> {
     Logger(vec![name.into()], file, config, PhantomData)
   }
 
+  #[inline]
   pub(crate) fn write(&self, level: Level, bundle: &B) {
     if level >= self.2.write_level {
       let mut s = String::new();
@@ -23,6 +24,7 @@ impl<'a, B: Bundle> Logger<'a, B> {
     }
   }
 
+  #[inline]
   pub(crate) fn print(&self, level: Level, bundle: &B) {
     if level >= self.2.print_level {
       let mut s = String::new();
