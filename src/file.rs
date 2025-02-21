@@ -127,7 +127,7 @@ impl File {
     let file = std::fs::OpenOptions::new()
       .create(true)
       .append(true)
-      .open(path)
+      .open(format!("{}/{}", config.directory, path))
       .unwrap();
 
     Self(Arc::new((Mutex::new(Inner {
@@ -182,16 +182,18 @@ impl File {
     let mut count = 0;
 
     loop {
+      let mut path = base_path.clone();
+
       if count != 0 {
-        base_path += &format!(" ({})", count);
+        path += &format!(" ({})", count);
       }
 
-      base_path += ".log";
+      path += ".log";
 
       let file = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
-        .open(base_path.clone())
+        .open(format!("{}/{}", config.directory, path))
         .unwrap();
 
       let size = file.metadata().unwrap().len();
