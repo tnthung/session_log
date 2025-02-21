@@ -15,7 +15,7 @@ pub trait Component {
   /// Writes to the writer for writing to a file.
   fn write(&self, f: &mut impl std::fmt::Write);
 
-  /// Writes to the writer for printing to the console.
+  /// Writes to the writer for printing to the console. Only used when the color feature is disabled.
   fn print(&self, f: &mut impl std::fmt::Write) {
     self.write(f);
   }
