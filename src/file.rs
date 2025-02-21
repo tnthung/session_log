@@ -118,7 +118,7 @@ impl File {
       let m = (secs % 3600) / 60;
       let s = secs % 60;
 
-      path += &format!(" {h}-{m}-{s}");
+      path += &format!("_{h:02}-{m:02}-{s:02}");
     }
 
     path += ".log";
@@ -176,7 +176,7 @@ impl File {
       let m = (secs % 3600) / 60;
       let s = secs % 60;
 
-      base_path += &format!(" {h}-{m}-{s}");
+      base_path += &format!("_{h:02}-{m:02}-{s:02}");
     }
 
     let mut count = 0;
