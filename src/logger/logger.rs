@@ -2,8 +2,8 @@ use crate::bundle::*;
 use crate::components::*;
 use crate::file::*;
 use crate::config::*;
-use std::marker::PhantomData;
 use std::io::Write;
+use std::marker::PhantomData;
 
 
 #[derive(Debug)]
@@ -14,13 +14,10 @@ impl<'a, B: Bundle> Logger<'a, B> {
   pub(crate) fn new_with_file(name: impl Into<String>, file: File, config: Config) -> Self {
     Logger(vec![name.into()], file, config, PhantomData)
   }
-}
 
-
-impl<'a, B: Bundle> Logger<'a, B> {
   /// Log with the specified level.
   #[track_caller]
-  pub fn log(&'a self, level: Level, message: impl ToBundle<'a, B=B>) {
+  pub fn log(&'a self, level: Level, message: impl ToBundle<'a, B>) {
     let bundle = message.to_bundle(Time::default(), level,
       Source::new(self.0.as_slice()), Location::new());
 
@@ -40,37 +37,37 @@ impl<'a, B: Bundle> Logger<'a, B> {
 
   /// Log with the verbose level.
   #[track_caller]
-  pub fn verbose(&'a self, message: impl ToBundle<'a, B=B>) {
+  pub fn verbose(&'a self, message: impl ToBundle<'a, B>) {
     self.log(Level::Verbose, message);
   }
 
   /// Log with the debug level.
   #[track_caller]
-  pub fn debug(&'a self, message: impl ToBundle<'a, B=B>) {
+  pub fn debug(&'a self, message: impl ToBundle<'a, B>) {
     self.log(Level::Debug, message);
   }
 
   /// Log with the info level.
   #[track_caller]
-  pub fn info(&'a self, message: impl ToBundle<'a, B=B>) {
+  pub fn info(&'a self, message: impl ToBundle<'a, B>) {
     self.log(Level::Info, message);
   }
 
   /// Log with the warning level.
   #[track_caller]
-  pub fn warning(&'a self, message: impl ToBundle<'a, B=B>) {
+  pub fn warning(&'a self, message: impl ToBundle<'a, B>) {
     self.log(Level::Warning, message);
   }
 
   /// Log with the critical level.
   #[track_caller]
-  pub fn critical(&'a self, message: impl ToBundle<'a, B=B>) {
+  pub fn critical(&'a self, message: impl ToBundle<'a, B>) {
     self.log(Level::Critical, message);
   }
 
   /// Log with the error level.
   #[track_caller]
-  pub fn error(&'a self, message: impl ToBundle<'a, B=B>) {
+  pub fn error(&'a self, message: impl ToBundle<'a, B>) {
     self.log(Level::Error, message);
   }
 
@@ -78,8 +75,15 @@ impl<'a, B: Bundle> Logger<'a, B> {
   ///
   /// `Caution`: This function will **EXIT** the process.
   #[track_caller]
-  pub fn fatal(&'a self, message: impl ToBundle<'a, B=B>) -> ! {
+  pub fn fatal(&'a self, message: impl ToBundle<'a, B>) -> ! {
     self.log(Level::Fatal, message);
     std::process::exit(1);
+  }
+}
+
+
+impl<'a, B: Bundle> Clone for Logger<'a, B> {
+  fn clone(&self) -> Self {
+    Logger(self.0.clone(), self.1.clone(), self.2.clone(), PhantomData)
   }
 }

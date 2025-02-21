@@ -15,16 +15,14 @@ pub trait Bundle {
 
 
 /// Convert the type into a bundle.
-pub trait ToBundle<'a> {
-  type B: Bundle;
-
+pub trait ToBundle<'a, B: Bundle> {
   fn to_bundle(
     self,
     time    : Time,
     level   : Level,
     source  : Source<'a>,
     location: Location,
-  ) -> Self::B;
+  ) -> B;
 }
 
 
@@ -51,10 +49,8 @@ impl<'a> Bundle for DefaultBundle<'a> {
 }
 
 
-impl<'a, T: Into<String>> ToBundle<'a> for T {
-  type B = DefaultBundle<'a>;
-
-  fn to_bundle(self, time: Time, level: Level, source: Source<'a>, location: Location) -> Self::B {
+impl<'a, T: Into<String>> ToBundle<'a, DefaultBundle<'a>> for T {
+  fn to_bundle(self, time: Time, level: Level, source: Source<'a>, location: Location) -> DefaultBundle<'a> {
     DefaultBundle(time, level, source, location, Message(self.into()))
   }
 }
