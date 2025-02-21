@@ -32,19 +32,19 @@ pub struct DefaultBundle<'a>(Time, Level, Source<'a>, Location, Message);
 
 impl<'a> Bundle for DefaultBundle<'a> {
   fn write(&self, f: &mut impl std::fmt::Write) {
-    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
-    ComponentInner::write(&self.1, f); write!(f, " - ").unwrap();
-    ComponentInner::write(&self.2, f); write!(f, " - ").unwrap();
-    ComponentInner::write(&self.3, f); write!(f, ": ").unwrap();
-    ComponentInner::write(&self.4, f);
+    self.0.format_write(f); write!(f, " ").unwrap();
+    self.1.format_write(f); write!(f, " - ").unwrap();
+    self.2.format_write(f); write!(f, " - ").unwrap();
+    self.3.format_write(f); write!(f, ": ").unwrap();
+    self.4.format_write(f);
   }
 
   fn print(&self, f: &mut impl std::fmt::Write) {
-    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
-    ComponentInner::print(&self.1, f); write!(f, " - ").unwrap();
-    ComponentInner::print(&self.2, f); write!(f, " - ").unwrap();
-    ComponentInner::print(&self.3, f); write!(f, ": ").unwrap();
-    ComponentInner::print(&self.4, f);
+    self.0.format_print(f); write!(f, " ").unwrap();
+    self.1.format_print(f); write!(f, " - ").unwrap();
+    self.2.format_print(f); write!(f, " - ").unwrap();
+    self.3.format_print(f); write!(f, ": ").unwrap();
+    self.4.format_print(f);
   }
 }
 
