@@ -38,7 +38,7 @@ impl Component for Level {
       Level::Warning  => write!(f, "\x1b[33m[W]\x1b[0m"),        // yellow
       Level::Critical => write!(f, "\x1b[38;5;208m[C]\x1b[0m"),  // orange
       Level::Error    => write!(f, "\x1b[31m[E]\x1b[0m"),        // red
-      Level::Fatal    => write!(f, "\x1b[31m[F]\x1b[0m"),        // red
+      Level::Fatal    => write!(f, "\x1b[38;5;196m[F]\x1b[0m"),  // bright red
     }.unwrap();
   }
 }
