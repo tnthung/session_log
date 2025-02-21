@@ -88,6 +88,13 @@ impl<'a, B: Bundle> Logger<'a, B> {
     self.log(Level::Fatal, message);
     std::process::exit(1);
   }
+
+  /// Create a layered logger.
+  pub fn layered(&self, name: impl Into<String>) -> Self {
+    let mut logger = self.clone();
+    logger.0.push(name.into());
+    logger
+  }
 }
 
 
