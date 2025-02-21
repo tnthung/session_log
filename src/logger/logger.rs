@@ -15,24 +15,31 @@ impl<'a, B: Bundle> Logger<'a, B> {
     Logger(vec![name.into()], file, config, PhantomData)
   }
 
+  pub(crate) fn write(&self, level: Level, bundle: &B) {
+    if level >= self.2.write_level {
+      let mut s = String::new();
+      bundle.write(&mut s);
+      self.1.writeln(s.as_bytes());
+    }
+  }
+
+  pub(crate) fn print(&self, level: Level, bundle: &B) {
+    if level >= self.2.print_level {
+      let mut s = String::new();
+      bundle.print(&mut s);
+      s += "\n";
+      std::io::stdout().write_all(s.as_bytes()).unwrap();
+    }
+  }
+
   /// Log with the specified level.
   #[track_caller]
   pub fn log(&'a self, level: Level, message: impl ToBundle<'a, B>) {
     let bundle = message.to_bundle(Time::default(), level,
       Source::new(self.0.as_slice()), Location::new());
 
-    if self.2.write_level <= level {
-      let mut s = String::new();
-      bundle.write(&mut s);
-      self.1.writeln(s.as_bytes());
-    }
-
-    if self.2.print_level <= level {
-      let mut s = String::new();
-      bundle.print(&mut s);
-      s += "\n";
-      std::io::stdout().write_all(s.as_bytes()).unwrap();
-    }
+    self.write(level, &bundle);
+    self.print(level, &bundle);
   }
 
   /// Log with the verbose level.
