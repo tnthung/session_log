@@ -7,7 +7,6 @@ pub mod config;
 
 pub mod prelude {
   pub use crate::file::FileConfig;
-  pub use crate::logger::Loggable;
 }
 
 pub mod unit {
