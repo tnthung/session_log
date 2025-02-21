@@ -59,7 +59,7 @@ impl FileConfig {
   pub fn duration(&self) -> i64 {
     if self.duration_hint == 0 { return 0; }
     let hint = self.duration_hint;
-    (Day / hint * hint) as i64
+    (Day / (Day / hint)) as i64
   }
 
   pub fn create(&self) -> File {
