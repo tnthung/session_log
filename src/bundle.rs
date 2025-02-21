@@ -3,10 +3,9 @@ use crate::components::*;
 
 /// A bundle is a fixed set of components that are used to create single record in the log. `write`
 /// and `print` methods are used to convert the bundle into a desired format. Default implementations
-/// for tuple that only contains `Component` are provided (up to 12 elements).
-///
-/// For custom formatting or tuple that contains more than 12 elements, you need to implement the
-/// `Bundle` trait manually.
+/// for tuple that only contains `Component` are provided (up to 12 elements), which are simply space
+/// concatenated. For custom formatting or tuple that contains more elements, you need to implement
+/// the `Bundle` trait manually.
 pub trait Bundle {
   /// Format the bundle to the writer for writing to a file.
   fn write(&self, f: &mut impl std::fmt::Write);
