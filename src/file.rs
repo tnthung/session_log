@@ -61,6 +61,10 @@ impl FileConfig {
     let hint = self.duration_hint;
     (Day / hint * hint) as i64
   }
+
+  pub fn create(&self) -> File {
+    File::new(self.clone())
+  }
 }
 
 
@@ -92,7 +96,7 @@ struct Inner {
 
 
 impl File {
-  pub fn new(config: FileConfig) -> Self {
+  pub(crate) fn new(config: FileConfig) -> Self {
     let dura = config.duration();
     let time = Local::now();
     let secs = time.num_seconds_from_midnight();
