@@ -46,4 +46,8 @@ impl Component for Location {
   fn write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}:{}", self.file(), self.line()).unwrap();
   }
+
+  fn color(&self, f: &mut impl std::fmt::Write) {
+    write!(f, "\x1b[90m{}:{}\x1b[0m", self.file(), self.line()).unwrap();
+  }
 }

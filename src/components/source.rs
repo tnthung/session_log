@@ -36,4 +36,8 @@ impl Component for Source {
   fn write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.0.join("::")).unwrap();
   }
+
+  fn color(&self, f: &mut impl std::fmt::Write) {
+    write!(f, "\x1b[90m{}\x1b[0m", self.0.join("::")).unwrap();
+  }
 }

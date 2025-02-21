@@ -32,4 +32,8 @@ impl Component for Time {
   fn write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.as_formatted()).unwrap();
   }
+
+  fn color(&self, f: &mut impl std::fmt::Write) {
+    write!(f, "\x1b[90m{}\x1b[0m", self.as_formatted()).unwrap();
+  }
 }

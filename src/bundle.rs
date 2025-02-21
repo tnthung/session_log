@@ -32,14 +32,33 @@ pub trait ToBundle {
 
 
 /// The default bundle that can directly be used if no custom formatting is needed.
-pub type DefaultBundle = (Time, Level, Source, Location, Message);
+pub struct DefaultBundle(Time, Level, Source, Location, Message);
+
+
+impl Bundle for DefaultBundle {
+  fn write(&self, f: &mut impl std::fmt::Write) {
+    ComponentInner::write(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::write(&self.1, f); write!(f, " - ").unwrap();
+    ComponentInner::write(&self.2, f); write!(f, " - ").unwrap();
+    ComponentInner::write(&self.3, f); write!(f, ": ").unwrap();
+    ComponentInner::write(&self.4, f);
+  }
+
+  fn print(&self, f: &mut impl std::fmt::Write) {
+    ComponentInner::print(&self.0, f); write!(f, " ").unwrap();
+    ComponentInner::print(&self.1, f); write!(f, " - ").unwrap();
+    ComponentInner::print(&self.2, f); write!(f, " - ").unwrap();
+    ComponentInner::print(&self.3, f); write!(f, ": ").unwrap();
+    ComponentInner::print(&self.4, f);
+  }
+}
 
 
 impl<T: Into<String>> ToBundle for T {
   type B = DefaultBundle;
 
   fn to_bundle(self, time: Time, level: Level, source: Source, location: Location) -> Self::B {
-    (time, level, source, location, Message(self.into()))
+    DefaultBundle(time, level, source, location, Message(self.into()))
   }
 }
 
