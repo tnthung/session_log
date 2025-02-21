@@ -27,8 +27,8 @@ impl<'a, B: Bundle> Logger<'a, B> {
     if level >= self.2.print_level {
       let mut s = String::new();
       bundle.print(&mut s);
-      s += "\n";
       std::io::stdout().write_all(s.as_bytes()).unwrap();
+      std::io::stdout().write_all(b"\n").unwrap();
     }
   }
 

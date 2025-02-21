@@ -8,9 +8,7 @@ pub trait Bundle {
   fn write(&self, f: &mut impl std::fmt::Write);
 
   /// Format the bundle to the writer for printing to the console. By default, it calls `write`.
-  fn print(&self, f: &mut impl std::fmt::Write) {
-    self.write(f);
-  }
+  fn print(&self, f: &mut impl std::fmt::Write) { self.write(f); }
 }
 
 
