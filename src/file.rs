@@ -156,7 +156,7 @@ impl File {
     let secs = time.timestamp();
 
     if secs != this.secs {
-      let part = secs / this.dura;
+      let part = time.num_seconds_from_midnight() as i64 / this.dura;
       need |= part != this.part;
 
       this.secs = secs;
