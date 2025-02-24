@@ -81,7 +81,6 @@ impl Default for FileConfig {
 }
 
 
-
 #[derive(Debug, Clone)]
 pub struct File(Arc<(Mutex<Inner>, FileConfig)>);
 
