@@ -6,18 +6,18 @@ use super::Component;
 /// * Although it is technically possible to create a logging bundle without a message, it is not
 /// recommended as it will not provide any useful information.
 #[derive(Debug, Clone)]
-pub struct Message(pub String);
+pub struct Message<'a>(pub &'a str);
 
 
-impl Message {
+impl<'a> Message<'a> {
   /// Creates a new message component.
-  pub fn new<S: Into<String>>(msg: S) -> Self {
-    Self(msg.into())
+  pub fn new<S: AsRef<str>>(msg: &'a S) -> Self {
+    Self(msg.as_ref())
   }
 }
 
 
-impl Component for Message {
+impl<'a> Component for Message<'a> {
   fn write(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.0).unwrap();
   }

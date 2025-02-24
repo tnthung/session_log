@@ -16,7 +16,7 @@ impl<'a, B: Bundle> Logger<'a, B> {
   }
 
   #[inline]
-  pub(crate) fn write(&self, level: Level, bundle: &B) {
+  pub(crate) fn write<'m>(&self, level: Level, bundle: &'m B) {
     if level >= self.2.write_level {
       let mut s = String::new();
       bundle.write(&mut s);
@@ -25,7 +25,7 @@ impl<'a, B: Bundle> Logger<'a, B> {
   }
 
   #[inline]
-  pub(crate) fn print(&self, level: Level, bundle: &B) {
+  pub(crate) fn print<'m>(&self, level: Level, bundle: &'m B) {
     if level >= self.2.print_level {
       let mut s = String::new();
       bundle.print(&mut s);
@@ -36,7 +36,9 @@ impl<'a, B: Bundle> Logger<'a, B> {
 
   /// Log with the specified level.
   #[track_caller]
-  pub fn log(&'a self, level: Level, message: impl ToBundle<'a, B>) {
+  pub fn log<'m>(&'a self, level: Level, message: &'m impl ToBundle<'m, B>)
+  where 'a: 'm
+  {
     let bundle = message.to_bundle(Time::default(), level,
       Source::new(self.0.as_slice()), Location::new());
 
@@ -46,37 +48,49 @@ impl<'a, B: Bundle> Logger<'a, B> {
 
   /// Log with the verbose level.
   #[track_caller]
-  pub fn verbose(&'a self, message: impl ToBundle<'a, B>) {
+  pub fn verbose<'m>(&'a self, message: &'m impl ToBundle<'m, B>)
+  where 'a: 'm
+  {
     self.log(Level::Verbose, message);
   }
 
   /// Log with the debug level.
   #[track_caller]
-  pub fn debug(&'a self, message: impl ToBundle<'a, B>) {
+  pub fn debug<'m>(&'a self, message: &'m impl ToBundle<'m, B>)
+  where 'a: 'm
+  {
     self.log(Level::Debug, message);
   }
 
   /// Log with the info level.
   #[track_caller]
-  pub fn info(&'a self, message: impl ToBundle<'a, B>) {
+  pub fn info<'m>(&'a self, message: &'m impl ToBundle<'m, B>)
+  where 'a: 'm
+  {
     self.log(Level::Info, message);
   }
 
   /// Log with the warning level.
   #[track_caller]
-  pub fn warning(&'a self, message: impl ToBundle<'a, B>) {
+  pub fn warning<'m>(&'a self, message: &'m impl ToBundle<'m, B>)
+  where 'a: 'm
+  {
     self.log(Level::Warning, message);
   }
 
   /// Log with the critical level.
   #[track_caller]
-  pub fn critical(&'a self, message: impl ToBundle<'a, B>) {
+  pub fn critical<'m>(&'a self, message: &'m impl ToBundle<'m, B>)
+  where 'a: 'm
+  {
     self.log(Level::Critical, message);
   }
 
   /// Log with the error level.
   #[track_caller]
-  pub fn error(&'a self, message: impl ToBundle<'a, B>) {
+  pub fn error<'m>(&'a self, message: &'m impl ToBundle<'m, B>)
+  where 'a: 'm
+  {
     self.log(Level::Error, message);
   }
 
@@ -84,7 +98,9 @@ impl<'a, B: Bundle> Logger<'a, B> {
   ///
   /// `Caution`: This function will **EXIT** the process.
   #[track_caller]
-  pub fn fatal(&'a self, message: impl ToBundle<'a, B>) -> ! {
+  pub fn fatal<'m>(&'a self, message: &'m impl ToBundle<'m, B>)
+  where 'a: 'm
+  {
     self.log(Level::Fatal, message);
     std::process::exit(1);
   }

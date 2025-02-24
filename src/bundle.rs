@@ -19,7 +19,7 @@ pub trait Bundle {
 /// Convert the type into a bundle.
 pub trait ToBundle<'a, B: Bundle> {
   fn to_bundle(
-    self,
+    &'a self,
     time    : Time,
     level   : Level,
     source  : Source<'a>,
@@ -34,12 +34,12 @@ pub type DefaultBundle<'a> = (
   Level     , &'static str,
   Source<'a>, &'static str,
   Location  , &'static str,
-  Message);
+  Message<'a>);
 
 
-impl<'a, T: Into<String>> ToBundle<'a, DefaultBundle<'a>> for T {
-  fn to_bundle(self, time: Time, level: Level, source: Source<'a>, location: Location) -> DefaultBundle<'a> {
-    (time, " ", level, " - ", source, " - ", location, ": ", Message(self.into()))
+impl<'a, T: AsRef<str> + 'a> ToBundle<'a, DefaultBundle<'a>> for T {
+  fn to_bundle(&'a self, time: Time, level: Level, source: Source<'a>, location: Location) -> DefaultBundle<'a> {
+    (time, " ", level, " - ", source, " - ", location, ": ", Message(self.as_ref()))
   }
 }
 
