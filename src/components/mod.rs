@@ -24,6 +24,13 @@ pub trait Component {
 }
 
 
+impl Component for &str {
+  fn write(&self, f: &mut impl std::fmt::Write) {
+    write!(f, "{self}").unwrap();
+  }
+}
+
+
 pub trait ComponentFormat: Component {
   /// Writes to the writer for writing to a file.
   fn format_write(&self, f: &mut impl std::fmt::Write) {
