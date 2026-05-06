@@ -1,3 +1,4 @@
+mod string;
 
 
 /// Components are building block of the log message.
