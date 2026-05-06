@@ -1,8 +1,15 @@
 use super::Component;
 
 
-impl<S: AsRef<str>> Component for S {
+impl Component for String {
   fn write_plain(&self, f: &mut impl std::fmt::Write) {
-    write!(f, "{}", self.as_ref()).unwrap();
+    write!(f, "{self}").unwrap();
+  }
+}
+
+
+impl Component for &str {
+  fn write_plain(&self, f: &mut impl std::fmt::Write) {
+    write!(f, "{self}").unwrap();
   }
 }
