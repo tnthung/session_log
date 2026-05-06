@@ -1,5 +1,7 @@
 mod string;
 
+pub mod level;
+
 
 /// Components are building block of the log message.
 pub trait Component {
