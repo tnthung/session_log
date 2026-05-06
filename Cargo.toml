@@ -10,6 +10,7 @@ description = "A simple session log library for Rust."
 
 [dependencies]
 log    = "0.4.29"
+tap    = "1.0.1"
 chrono = "0.4.44"
 
 [features]
