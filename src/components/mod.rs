@@ -1,8 +1,9 @@
 pub mod level;
 pub mod location;
+pub mod message;
+pub mod spacing;
 pub mod target;
 pub mod time;
-pub mod message;
 
 
 use std::fmt::Arguments;

@@ -1,6 +1,7 @@
 use super::Component;
 
 
+/// A component that represents the log target (module path).
 #[derive(Debug)]
 pub struct Target<'a>(&'a str);
 
