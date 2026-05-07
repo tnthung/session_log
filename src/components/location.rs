@@ -6,30 +6,14 @@ use super::Component;
 pub struct Location(String);
 
 
-impl Location {
-  #[track_caller]
-  pub fn new() -> Self {
-    let loc = std::panic::Location::caller();
-
-    let line = loc.line();
-    let path = loc.file();
-
-    // remove the UNC prefix
-    let path = path.strip_prefix(r"\\?\").unwrap_or(path);
-
-    // remove the project root prefix
-    let path = path.strip_prefix(env!("CARGO_MANIFEST_DIR")).unwrap_or(path);
-
-    // remove the prefix slash
-    let path = path.strip_prefix(r"\").unwrap_or(path);
-    let path = path.strip_prefix(r"/").unwrap_or(path);
-
-    Self(format!("{path}:{line}"))
+impl<'a> Component<'a> for Location {
+  fn construct(_: std::fmt::Arguments<'a>, record: log::Record<'a>) -> Self where Self: Sized {
+    match (record.file(), record.line()) {
+      (Some(file), Some(line)) => Self(format!("{file}:{line}")),
+      _ => Self("unknown".to_string()),
+    }
   }
-}
 
-
-impl Component for Location {
   fn write_plain(&self, f: &mut impl std::fmt::Write) {
     write!(f, "{}", self.0).unwrap();
   }

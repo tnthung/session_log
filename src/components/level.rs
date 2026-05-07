@@ -2,7 +2,11 @@ use super::Component;
 use log::Level;
 
 
-impl Component for Level {
+impl<'a> Component<'a> for Level {
+  fn construct(_: std::fmt::Arguments<'a>, record: log::Record<'a>) -> Self {
+    record.level()
+  }
+
   fn write_plain(&self, f: &mut impl std::fmt::Write) {
     match self {
       Level::Trace => write!(f, "[T]"),
