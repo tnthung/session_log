@@ -1,6 +1,7 @@
 use super::Component;
 
 
+/// A component that represents the log message itself.
 pub struct Message<'a>(std::fmt::Arguments<'a>);
 
 
