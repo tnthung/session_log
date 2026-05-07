@@ -2,6 +2,7 @@ mod string;
 
 pub mod level;
 pub mod location;
+pub mod target;
 
 
 /// Components are building block of the log message.
