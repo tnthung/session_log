@@ -1,16 +1,19 @@
 use super::Component;
+use std::sync::OnceLock;
 
 
 /// A component that represents the log message itself.
-pub struct Message<'a>(std::fmt::Arguments<'a>);
+#[derive(Debug, Default, Clone)]
+pub struct Message(OnceLock<String>);
 
-
-impl<'a> Component<'a> for Message<'a> {
-  fn construct(message: std::fmt::Arguments<'a>, _: log::Record<'a>) -> Self {
-    Message(message)
+impl Message {
+  fn value<'a>(&self, message: &std::fmt::Arguments<'a>) -> &str {
+    self.0.get_or_init(|| message.to_string())
   }
+}
 
-  fn write_plain(&self, f: &mut impl std::fmt::Write) {
-    write!(f, "{}", self.0).unwrap();
+impl Component for Message {
+  fn write_plain<'a>(&self, f: &mut impl std::fmt::Write, message: &std::fmt::Arguments<'a>, _: &log::Record<'a>) {
+    write!(f, "{}", self.value(message)).unwrap();
   }
 }

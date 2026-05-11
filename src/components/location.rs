@@ -1,25 +1,29 @@
 use super::Component;
+use std::sync::OnceLock;
 
 
 /// Location component is used to annotate which location in the source code the logging is happened.
-#[derive(Debug, Default)]
-pub struct Location(String);
+#[derive(Debug, Default, Clone)]
+pub struct Location(OnceLock<String>);
 
-
-impl<'a> Component<'a> for Location {
-  fn construct(_: std::fmt::Arguments<'a>, record: log::Record<'a>) -> Self where Self: Sized {
-    match (record.file(), record.line()) {
-      (Some(file), Some(line)) => Self(format!("{file}:{line}")),
-      _ => Self("unknown".to_string()),
-    }
+impl Location {
+  fn value<'a>(&self, record: &log::Record<'a>) -> &str {
+    self.0.get_or_init(|| {
+      match (record.file(), record.line()) {
+        (Some(file), Some(line)) => format!("{file}:{line}"),
+        _ => "unknown".to_string(),
+      }
+    })
   }
+}
 
-  fn write_plain(&self, f: &mut impl std::fmt::Write) {
-    write!(f, "{}", self.0).unwrap();
+impl Component for Location {
+  fn write_plain<'a>(&self, f: &mut impl std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
+    write!(f, "{}", self.value(record)).unwrap();
   }
 
   #[cfg(feature = "color")]
-  fn write_color(&self, f: &mut impl std::fmt::Write) {
-    write!(f, "\x1b[90m{}\x1b[0m", self.0).unwrap();
+  fn write_color<'a>(&self, f: &mut impl std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
+    write!(f, "\x1b[90m{}\x1b[0m", self.value(record)).unwrap();
   }
 }

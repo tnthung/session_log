@@ -11,32 +11,33 @@ use log::Record;
 
 
 /// Components are building block of the log message.
-pub trait Component<'a> {
-  fn construct(message: Arguments<'a>, record: Record<'a>) -> Self where Self: Sized;
-
+pub trait Component: Default {
   /// Used for non-color output, such as writing to a file.
-  fn write_plain(&self, f: &mut impl std::fmt::Write);
+  fn write_plain<'a>(&self, f: &mut impl std::fmt::Write, message: &Arguments<'a>, record: &Record<'a>);
 
   /// Used for color output, such as printing to the console.
   #[cfg(feature = "color")]
-  fn write_color(&self, f: &mut impl std::fmt::Write) { self.write_plain(f); }
+  fn write_color<'a>(&self, f: &mut impl std::fmt::Write, message: &Arguments<'a>, record: &Record<'a>) {
+    self.write_plain(f, message, record);
+  }
 }
 
 
-pub(crate) trait ComponentEx<'a>: Component<'a> {
-  fn write(&self, f: &mut impl std::fmt::Write) {
-    self.write_plain(f);
+pub(crate) trait ComponentEx: Component {
+  fn write<'a>(&self, f: &mut impl std::fmt::Write, message: &Arguments<'a>, record: &Record<'a>) {
+    self.write_plain(f, message, record);
   }
 
   #[cfg(not(feature = "color"))]
-  fn print(&self, f: &mut impl std::fmt::Write) {
-    self.write_plain(f);
+  fn print<'a>(&self, f: &mut impl std::fmt::Write, message: &Arguments<'a>, record: &Record<'a>) {
+    self.write_plain(f, message, record);
   }
 
   #[cfg(feature = "color")]
-  fn print(&self, f: &mut impl std::fmt::Write) {
-    self.write_color(f);
+  fn print<'a>(&self, f: &mut impl std::fmt::Write, message: &Arguments<'a>, record: &Record<'a>) {
+    self.write_color(f, message, record);
   }
 }
 
-impl<'a, T: Component<'a>> ComponentEx<'a> for T {}
+
+impl<T: Component> ComponentEx for T {}
