@@ -18,12 +18,12 @@ impl Location {
 }
 
 impl Component for Location {
-  fn write_plain<'a>(&self, f: &mut impl std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
+  fn write_plain<'a>(&self, f: &mut dyn std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
     write!(f, "{}", self.value(record)).unwrap();
   }
 
   #[cfg(feature = "color")]
-  fn write_color<'a>(&self, f: &mut impl std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
+  fn write_color<'a>(&self, f: &mut dyn std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", self.value(record).bright_black()).unwrap();
   }

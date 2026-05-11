@@ -6,12 +6,12 @@ use super::Component;
 pub struct Target;
 
 impl Component for Target {
-  fn write_plain<'a>(&self, f: &mut impl std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
+  fn write_plain<'a>(&self, f: &mut dyn std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
     write!(f, "{}", record.target()).unwrap();
   }
 
   #[cfg(feature = "color")]
-  fn write_color<'a>(&self, f: &mut impl std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
+  fn write_color<'a>(&self, f: &mut dyn std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", record.target().bright_black()).unwrap();
   }
