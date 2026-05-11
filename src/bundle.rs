@@ -1,5 +1,6 @@
 use super::components::ComponentEx;
-use std::fmt::{Arguments, Write};
+use std::fmt::Arguments;
+use std::io::Write;
 use log::Record;
 
 

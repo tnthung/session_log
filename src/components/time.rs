@@ -14,7 +14,7 @@ impl FullTime {
 }
 
 impl Component for FullTime {
-  fn write_plain<'a>(&self, f: &mut dyn std::fmt::Write, _: &std::fmt::Arguments<'a>, _: &log::Record<'a>) {
+  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &std::fmt::Arguments<'a>, _: &log::Record<'a>) {
     write!(f, "{}", self.value()).unwrap();
   }
 }
@@ -31,7 +31,7 @@ impl LocalTime {
 }
 
 impl Component for LocalTime {
-  fn write_plain<'a>(&self, f: &mut dyn std::fmt::Write, _: &std::fmt::Arguments<'a>, _: &log::Record<'a>) {
+  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &std::fmt::Arguments<'a>, _: &log::Record<'a>) {
     write!(f, "{}", self.value()).unwrap();
   }
 }
@@ -48,7 +48,7 @@ impl ShortTime {
 }
 
 impl Component for ShortTime {
-  fn write_plain<'a>(&self, f: &mut dyn std::fmt::Write, _: &std::fmt::Arguments<'a>, _: &log::Record<'a>) {
+  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &std::fmt::Arguments<'a>, _: &log::Record<'a>) {
     write!(f, "{}", self.value()).unwrap();
   }
 }
@@ -65,7 +65,7 @@ impl SimpleTime {
 }
 
 impl Component for SimpleTime {
-  fn write_plain<'a>(&self, f: &mut dyn std::fmt::Write, _: &std::fmt::Arguments<'a>, _: &log::Record<'a>) {
+  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &std::fmt::Arguments<'a>, _: &log::Record<'a>) {
     write!(f, "{}", self.value()).unwrap();
   }
 }

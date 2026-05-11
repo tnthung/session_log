@@ -7,7 +7,7 @@ use log::Level as LogLevel;
 pub struct Level;
 
 impl Component for Level {
-  fn write_plain<'a>(&self, f: &mut dyn std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
+  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
     match record.level() {
       LogLevel::Trace => write!(f, "[T]"),
       LogLevel::Debug => write!(f, "[D]"),
@@ -18,7 +18,7 @@ impl Component for Level {
   }
 
   #[cfg(feature = "color")]
-  fn write_color<'a>(&self, f: &mut dyn std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
+  fn write_color<'a>(&self, f: &mut dyn std::io::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", match record.level() {
       LogLevel::Trace => "[T]".bright_black(),

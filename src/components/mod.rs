@@ -6,7 +6,8 @@ pub mod target;
 pub mod time;
 
 
-use std::fmt::{Arguments, Write};
+use std::fmt::Arguments;
+use std::io::Write;
 use log::Record;
 
 
