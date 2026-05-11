@@ -11,7 +11,7 @@ use log::Record;
 
 
 /// Components are building block of the log message.
-pub trait Component: Default {
+pub trait Component: Default + Send + Sync {
   /// Used for non-color output, such as writing to a file.
   fn write_plain<'a>(&self, f: &mut impl std::fmt::Write, message: &Arguments<'a>, record: &Record<'a>);
 

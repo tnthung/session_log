@@ -3,7 +3,7 @@ use std::fmt::{Arguments, Write};
 use log::Record;
 
 
-pub trait Bundle {
+pub trait Bundle: Send + Sync {
   fn create() -> Self where Self: Sized;
   fn write<'a>(&self, f: &mut impl Write, message: &Arguments<'a>, record: &Record<'a>);
   fn print<'a>(&self, f: &mut impl Write, message: &Arguments<'a>, record: &Record<'a>);
