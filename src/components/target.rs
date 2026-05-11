@@ -12,6 +12,7 @@ impl Component for Target {
 
   #[cfg(feature = "color")]
   fn write_color<'a>(&self, f: &mut impl std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
-    write!(f, "\x1b[90m{}\x1b[0m", record.target()).unwrap();
+    use colored::Colorize;
+    write!(f, "{}", record.target().bright_black()).unwrap();
   }
 }

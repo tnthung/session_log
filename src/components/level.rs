@@ -19,12 +19,13 @@ impl Component for Level {
 
   #[cfg(feature = "color")]
   fn write_color<'a>(&self, f: &mut impl std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
-    match record.level() {
-      LogLevel::Trace => write!(f, "\x1b[90m[T]\x1b[0m"), // gray
-      LogLevel::Debug => write!(f, "\x1b[37m[D]\x1b[0m"), // white
-      LogLevel::Info  => write!(f, "\x1b[32m[I]\x1b[0m"), // green
-      LogLevel::Warn  => write!(f, "\x1b[33m[W]\x1b[0m"), // yellow
-      LogLevel::Error => write!(f, "\x1b[31m[E]\x1b[0m"), // red
-    }.unwrap();
+    use colored::Colorize;
+    write!(f, "{}", match record.level() {
+      LogLevel::Trace => "[T]".bright_black(),
+      LogLevel::Debug => "[D]".white(),
+      LogLevel::Info  => "[I]".green(),
+      LogLevel::Warn  => "[W]".yellow(),
+      LogLevel::Error => "[E]".red(),
+    }).unwrap();
   }
 }

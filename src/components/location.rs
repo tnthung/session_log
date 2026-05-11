@@ -24,6 +24,7 @@ impl Component for Location {
 
   #[cfg(feature = "color")]
   fn write_color<'a>(&self, f: &mut impl std::fmt::Write, _: &std::fmt::Arguments<'a>, record: &log::Record<'a>) {
-    write!(f, "\x1b[90m{}\x1b[0m", self.value(record)).unwrap();
+    use colored::Colorize;
+    write!(f, "{}", self.value(record).bright_black()).unwrap();
   }
 }

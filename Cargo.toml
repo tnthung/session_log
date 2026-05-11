@@ -9,10 +9,11 @@ description = "A simple session log library for Rust."
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-log    = "0.4.29"
-tap    = "1.0.1"
-chrono = "0.4.44"
+log     = "0.4.29"
+tap     = "1.0.1"
+chrono  = "0.4.44"
+colored = { version = "3.1.1", optional = true }
 
 [features]
-color = []
+color = ["dep:colored"]
 batch = []
