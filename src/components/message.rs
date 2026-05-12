@@ -13,7 +13,7 @@ impl Message {
 }
 
 impl Component for Message {
-  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, message: &std::fmt::Arguments<'a>, _: &log::Record<'a>) {
-    write!(f, "{}", self.value(message)).unwrap();
+  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+    write!(f, "{}", self.value(record.args())).unwrap();
   }
 }
