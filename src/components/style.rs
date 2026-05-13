@@ -1,4 +1,5 @@
 use super::Component;
+use super::color::Reset;
 
 
 macro_rules! format_component {

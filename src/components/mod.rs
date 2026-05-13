@@ -1,6 +1,6 @@
 #[cfg(feature = "color")]
 pub mod color;
-pub mod format;
+pub mod style;
 pub mod level;
 pub mod location;
 pub mod message;
