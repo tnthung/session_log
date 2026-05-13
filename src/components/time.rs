@@ -1,6 +1,6 @@
 use super::Component;
 use std::sync::OnceLock;
-use chrono::{Local, SecondsFormat};
+use chrono::{Local, Utc, SecondsFormat};
 
 
 /// Time component formatted as `[YYYY]-[MM]-[DD]T[HH]:[mm]:[SS.ssssss]+[ZZ:ZZ]`.
@@ -31,6 +31,23 @@ impl LocalTime {
 }
 
 impl Component for LocalTime {
+  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+    write!(f, "{}", self.value()).unwrap();
+  }
+}
+
+
+/// Time component formatted as `[YYYY]-[MM]-[DD]T[HH]:[mm]:[SS.ssssss]`.
+#[derive(Debug, Default, Clone)]
+pub struct UtcTime(OnceLock<String>);
+
+impl UtcTime {
+  fn value(&self) -> &str {
+    self.0.get_or_init(|| Utc::now().to_rfc3339_opts(SecondsFormat::Micros, false))
+  }
+}
+
+impl Component for UtcTime {
   fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &log::Record<'a>) {
     write!(f, "{}", self.value()).unwrap();
   }
