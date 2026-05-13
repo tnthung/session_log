@@ -26,7 +26,7 @@ pub struct LocalTime(OnceLock<String>);
 
 impl LocalTime {
   fn value(&self) -> &str {
-    self.0.get_or_init(|| Local::now().to_rfc3339_opts(SecondsFormat::Micros, false))
+    self.0.get_or_init(|| Local::now().format("%Y-%m-%dT%H:%M:%S%.6f").to_string())
   }
 }
 
@@ -43,7 +43,7 @@ pub struct UtcTime(OnceLock<String>);
 
 impl UtcTime {
   fn value(&self) -> &str {
-    self.0.get_or_init(|| Utc::now().to_rfc3339_opts(SecondsFormat::Micros, false))
+    self.0.get_or_init(|| Utc::now().format("%Y-%m-%dT%H:%M:%S%.6f").to_string())
   }
 }
 
