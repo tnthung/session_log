@@ -8,19 +8,24 @@ use log::Record;
 
 
 #[derive(Debug)]
-pub struct Formatter<const N: usize, B: Bundle> {
-  outputs:  [Output; N],
+pub struct Formatter<B: Bundle> {
+  outputs:  Vec<Output>,
   sessions: HashMap<u128, (Metadata, Vec<String>)>,
   _marker:  std::marker::PhantomData<B>,
 }
 
-impl<const N: usize, B: Bundle> Formatter<N, B> {
-  pub fn new(outputs: [Output; N]) -> Self {
+impl<B: Bundle+'static> Formatter<B> {
+  #[allow(private_interfaces)]
+  pub fn new() -> Self {
     Self {
-      outputs,
+      outputs:  Vec::with_capacity(5),
       sessions: HashMap::new(),
       _marker:  std::marker::PhantomData,
     }
+  }
+
+  pub fn add_output(&mut self, output: Output) {
+    self.outputs.push(output);
   }
 
   fn output_record(&mut self, record: &Record, for_write: &OnceLock<String>) -> bool /* has session */ {
@@ -63,7 +68,7 @@ pub(crate) trait FormatterTrait {
   fn drop_session(&mut self, sid: u128, elapsed: std::time::Duration);
 }
 
-impl<const N: usize, B: Bundle> FormatterTrait for Formatter<N, B> {
+impl<B: Bundle+'static> FormatterTrait for Formatter<B> {
   fn flush(&mut self) {
     for output in &mut self.outputs {
       output.writer().flush().unwrap();
