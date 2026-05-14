@@ -23,7 +23,7 @@ impl Logger {
 
   pub(crate) fn add_formatter(formatter: Box<dyn FormatterTrait>) {
     static ONCE: std::sync::Once = std::sync::Once::new();
-    ONCE.call_once(|| { log::set_logger(&LOGGER).unwrap(); });
+    ONCE.call_once(|| log::set_logger(&LOGGER).expect("Failed to set logger"));
     LOGGER.formatters.lock().unwrap().push(formatter);
   }
 
