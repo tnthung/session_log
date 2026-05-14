@@ -1,5 +1,6 @@
 #![allow(private_bounds)]
 use super::bundle::Bundle;
+use super::logger::Logger;
 use super::output::{Output, Mode};
 use super::session::Metadata;
 use std::collections::HashMap;
@@ -24,8 +25,18 @@ impl<B: Bundle+'static> Formatter<B> {
     }
   }
 
-  pub fn add_output(&mut self, output: Output) {
+  pub fn add_output(mut self, output: Output) -> Self {
     self.outputs.push(output);
+    self
+  }
+
+  pub fn attach(self) {
+    if self.outputs.is_empty() {
+      eprintln!("Warning: No output is added to the formatter. Logs will be discarded.");
+      return;
+    }
+
+    Logger::add_formatter(Box::new(self));
   }
 
   fn output_record(&mut self, record: &Record, for_write: &OnceLock<String>) -> bool /* has session */ {
@@ -62,7 +73,7 @@ impl<B: Bundle+'static> Formatter<B> {
 }
 
 
-pub(crate) trait FormatterTrait {
+pub(crate) trait FormatterTrait: Send {
   fn flush(&mut self);
   fn add_log(&mut self, record: &Record);
   fn drop_session(&mut self, sid: u128, elapsed: std::time::Duration);
