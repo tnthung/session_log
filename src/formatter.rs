@@ -58,11 +58,18 @@ impl<const N: usize, B: Bundle> Formatter<N, B> {
 
 
 pub(crate) trait FormatterTrait {
+  fn flush(&mut self);
   fn add_log(&mut self, record: &Record);
   fn drop_session(&mut self, sid: u128, elapsed: std::time::Duration);
 }
 
 impl<const N: usize, B: Bundle> FormatterTrait for Formatter<N, B> {
+  fn flush(&mut self) {
+    for output in &mut self.outputs {
+      output.writer().flush().unwrap();
+    }
+  }
+
   fn add_log(&mut self, record: &Record) {
     let for_write = OnceLock::new();
     if !self.output_record(record, &for_write) { return; }
