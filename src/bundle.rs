@@ -1,10 +1,9 @@
-use super::components::ComponentEx;
+use super::components::{Component, ComponentEx};
 use std::io::Write;
 use log::Record;
 
 
-pub trait Bundle: Send + Sync {
-  fn create() -> Self where Self: Sized;
+pub(crate) trait Bundle: Default + Send + Sync {
   fn write<'a>(&self, f: &mut dyn Write, record: &Record<'a>);
   fn print<'a>(&self, f: &mut dyn Write, record: &Record<'a>);
 }
@@ -20,10 +19,6 @@ macro_rules! impl_bundle {
 
   (@ $($i:ident)+) => {
     impl<$($i: ComponentEx),+> Bundle for ($($i,)+) {
-      fn create() -> Self {
-        ($($i::default(),)+)
-      }
-
       #[allow(non_snake_case)]
       fn write<'a>(&self, f: &mut dyn Write, record: &Record<'a>) {
         let ($($i,)+) = self;
@@ -40,4 +35,15 @@ macro_rules! impl_bundle {
 }
 
 
-impl_bundle! { A B C D E F G H I J K L M N O P }
+impl_bundle! { A B C D E F G H I J K L }
+
+
+impl<B: Bundle> Component for B {
+  fn write_plain<'a>(&self, f: &mut dyn Write, record: &Record<'a>) {
+    self.write(f, record);
+  }
+
+  fn write_color<'a>(&self, f: &mut dyn Write, record: &Record<'a>) {
+    self.print(f, record);
+  }
+}
