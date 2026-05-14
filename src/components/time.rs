@@ -1,88 +1,57 @@
 use super::Component;
-use std::sync::OnceLock;
 use chrono::{Local, Utc, SecondsFormat};
 
 
 /// Time component formatted as `[YYYY]-[MM]-[DD]T[HH]:[mm]:[SS.ssssss]+[ZZ:ZZ]`.
-#[derive(Debug, Default, Clone)]
-pub struct FullTime(OnceLock<String>);
-
-impl FullTime {
-  fn value(&self) -> &str {
-    self.0.get_or_init(|| Local::now().to_rfc3339_opts(SecondsFormat::Micros, true))
-  }
-}
+#[derive(Debug, Default, Clone, Copy)]
+pub struct FullTime;
 
 impl Component for FullTime {
-  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &log::Record<'a>) {
-    write!(f, "{}", self.value()).unwrap();
+  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+    write!(f, "{}", Local::now().to_rfc3339_opts(SecondsFormat::Micros, true)).unwrap();
   }
 }
 
 
 /// Time component formatted as `[YYYY]-[MM]-[DD]T[HH]:[mm]:[SS.ssssss]`.
-#[derive(Debug, Default, Clone)]
-pub struct LocalTime(OnceLock<String>);
-
-impl LocalTime {
-  fn value(&self) -> &str {
-    self.0.get_or_init(|| Local::now().format("%Y-%m-%dT%H:%M:%S%.6f").to_string())
-  }
-}
+#[derive(Debug, Default, Clone, Copy)]
+pub struct LocalTime;
 
 impl Component for LocalTime {
-  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &log::Record<'a>) {
-    write!(f, "{}", self.value()).unwrap();
+  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+    write!(f, "{}", Local::now().format("%Y-%m-%dT%H:%M:%S%.6f")).unwrap();
   }
 }
 
 
 /// Time component formatted as `[YYYY]-[MM]-[DD]T[HH]:[mm]:[SS.ssssss]`.
-#[derive(Debug, Default, Clone)]
-pub struct UtcTime(OnceLock<String>);
-
-impl UtcTime {
-  fn value(&self) -> &str {
-    self.0.get_or_init(|| Utc::now().format("%Y-%m-%dT%H:%M:%S%.6f").to_string())
-  }
-}
+#[derive(Debug, Default, Clone, Copy)]
+pub struct UtcTime;
 
 impl Component for UtcTime {
-  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &log::Record<'a>) {
-    write!(f, "{}", self.value()).unwrap();
+  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+    write!(f, "{}", Utc::now().format("%Y-%m-%dT%H:%M:%S%.6f")).unwrap();
   }
 }
 
 
 /// Time component formatted as `[HH]:[mm]:[SS.ssssss]`.
-#[derive(Debug, Default, Clone)]
-pub struct ShortTime(OnceLock<String>);
-
-impl ShortTime {
-  fn value(&self) -> &str {
-    self.0.get_or_init(|| Local::now().format("%H:%M:%S%.6f").to_string())
-  }
-}
+#[derive(Debug, Default, Clone, Copy)]
+pub struct ShortTime;
 
 impl Component for ShortTime {
-  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &log::Record<'a>) {
-    write!(f, "{}", self.value()).unwrap();
+  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+    write!(f, "{}", Local::now().format("%H:%M:%S%.6f")).unwrap();
   }
 }
 
 
 /// Time component formatted as `[HH]:[mm]:[SS]`.
-#[derive(Debug, Default, Clone)]
-pub struct SimpleTime(OnceLock<String>);
-
-impl SimpleTime {
-  fn value(&self) -> &str {
-    self.0.get_or_init(|| Local::now().format("%H:%M:%S").to_string())
-  }
-}
+#[derive(Debug, Default, Clone, Copy)]
+pub struct SimpleTime;
 
 impl Component for SimpleTime {
-  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, _: &log::Record<'a>) {
-    write!(f, "{}", self.value()).unwrap();
+  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+    write!(f, "{}", Local::now().format("%H:%M:%S")).unwrap();
   }
 }

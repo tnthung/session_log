@@ -7,7 +7,7 @@ use log::Level as LogLevel;
 pub struct Level;
 
 impl Component for Level {
-  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_plain<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     match record.level() {
       LogLevel::Trace => write!(f, "[TRACE]"),
       LogLevel::Debug => write!(f, "[DEBUG]"),
@@ -18,7 +18,7 @@ impl Component for Level {
   }
 
   #[cfg(feature = "color")]
-  fn write_color<'a>(&self, f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_color<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", match record.level() {
       LogLevel::Trace => "[TRACE]".bright_black(),
@@ -36,7 +36,7 @@ impl Component for Level {
 pub struct LevelNoPadding;
 
 impl Component for LevelNoPadding {
-  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_plain<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     match record.level() {
       LogLevel::Trace => write!(f, "TRACE"),
       LogLevel::Debug => write!(f, "DEBUG"),
@@ -47,7 +47,7 @@ impl Component for LevelNoPadding {
   }
 
   #[cfg(feature = "color")]
-  fn write_color<'a>(&self, f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_color<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", match record.level() {
       LogLevel::Trace => "TRACE".bright_black(),
@@ -65,7 +65,7 @@ impl Component for LevelNoPadding {
 pub struct LevelCompact;
 
 impl Component for LevelCompact {
-  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_plain<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     match record.level() {
       LogLevel::Trace => write!(f, "[T]"),
       LogLevel::Debug => write!(f, "[D]"),
@@ -76,7 +76,7 @@ impl Component for LevelCompact {
   }
 
   #[cfg(feature = "color")]
-  fn write_color<'a>(&self, f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_color<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", match record.level() {
       LogLevel::Trace => "[T]".bright_black(),
@@ -94,7 +94,7 @@ impl Component for LevelCompact {
 pub struct LevelMoreCompact;
 
 impl Component for LevelMoreCompact {
-  fn write_plain<'a>(&self, f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_plain<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     match record.level() {
       LogLevel::Trace => write!(f, "T"),
       LogLevel::Debug => write!(f, "D"),
@@ -105,7 +105,7 @@ impl Component for LevelMoreCompact {
   }
 
   #[cfg(feature = "color")]
-  fn write_color<'a>(&self, f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_color<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", match record.level() {
       LogLevel::Trace => "T".bright_black(),

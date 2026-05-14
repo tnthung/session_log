@@ -8,8 +8,8 @@ macro_rules! format_component {
     pub struct $name;
 
     impl Component for $name {
-      fn write_plain<'a>(&self, _: &mut dyn std::io::Write, _: &log::Record<'a>) {}
-      fn write_color<'a>(&self, f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+      fn write_plain<'a>(_: &mut dyn std::io::Write, _: &log::Record<'a>) {}
+      fn write_color<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
         write!(f, concat!("\x1b[", $code, "m")).unwrap();
       }
     }
