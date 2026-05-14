@@ -1,5 +1,4 @@
 use super::Component;
-use super::color::Reset;
 
 
 macro_rules! format_component {
@@ -17,6 +16,8 @@ macro_rules! format_component {
   };
 }
 
+
+format_component!(Reset, "Reset all colors and styles.", "0");
 
 format_component!(Bold, "Enable bold text.", "1");
 format_component!(Dim, "Enable dim text.", "2");
