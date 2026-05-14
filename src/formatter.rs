@@ -10,7 +10,7 @@ use log::Record;
 #[derive(Debug)]
 pub struct Formatter<const N: usize, B: Bundle> {
   outputs:  [Output; N],
-  sessions: HashMap<String, (Metadata, Vec<String>)>,
+  sessions: HashMap<u128, (Metadata, Vec<String>)>,
   _marker:  std::marker::PhantomData<B>,
 }
 
@@ -59,7 +59,7 @@ impl<const N: usize, B: Bundle> Formatter<N, B> {
 
 pub(crate) trait FormatterTrait {
   fn add_log(&mut self, record: &Record);
-  fn drop_session(&mut self, sid: &str, elapsed: std::time::Duration);
+  fn drop_session(&mut self, sid: u128, elapsed: std::time::Duration);
 }
 
 impl<const N: usize, B: Bundle> FormatterTrait for Formatter<N, B> {
@@ -69,10 +69,10 @@ impl<const N: usize, B: Bundle> FormatterTrait for Formatter<N, B> {
 
     let Some(sid) = record.key_values()
       .get("__session_log_session_id".into())
-      .map(|v| v.to_borrowed_str()).flatten()
+      .map(|v| v.to_u128()).flatten()
     else { return; };
 
-    let Some(meta) = Metadata::get(&sid)
+    let Some(meta) = Metadata::get(sid)
       else { return; };
 
     let message = for_write.get_or_init(|| {
@@ -89,8 +89,8 @@ impl<const N: usize, B: Bundle> FormatterTrait for Formatter<N, B> {
     }
   }
 
-  fn drop_session(&mut self, sid: &str, elapsed: std::time::Duration) {
-    let Some((meta, messages)) = self.sessions.remove(sid)
+  fn drop_session(&mut self, sid: u128, elapsed: std::time::Duration) {
+    let Some((meta, messages)) = self.sessions.remove(&sid)
       else { return; };
 
     let title = match meta.name {
