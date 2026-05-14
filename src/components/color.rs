@@ -9,7 +9,7 @@ macro_rules! color_component {
 
     impl Component for $name {
       fn write_plain<'a>(_: &mut dyn std::io::Write, _: &log::Record<'a>) {}
-      fn write_color<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+      fn write_style<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
         write!(f, concat!("\x1b[", $code, "m")).unwrap();
       }
     }

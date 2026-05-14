@@ -1,4 +1,4 @@
-#[cfg(feature = "color")]
+#[cfg(feature = "style")]
 pub mod color;
 #[cfg(feature = "style")]
 pub mod style;
@@ -20,8 +20,8 @@ pub trait Component: Send + Sync {
   fn write_plain<'a>(f: &mut dyn Write, record: &Record<'a>);
 
   /// Used for color output, such as printing to the console.
-  #[cfg(feature = "color")]
-  fn write_color<'a>(f: &mut dyn Write, record: &Record<'a>) {
+  #[cfg(feature = "style")]
+  fn write_style<'a>(f: &mut dyn Write, record: &Record<'a>) {
     Self::write_plain(f, record);
   }
 }
@@ -32,14 +32,14 @@ pub(crate) trait ComponentEx: Component {
     Self::write_plain(f, record);
   }
 
-  #[cfg(not(feature = "color"))]
+  #[cfg(not(feature = "style"))]
   fn print<'a>(f: &mut dyn Write, record: &Record<'a>) {
     Self::write_plain(f, record);
   }
 
-  #[cfg(feature = "color")]
+  #[cfg(feature = "style")]
   fn print<'a>(f: &mut dyn Write, record: &Record<'a>) {
-    Self::write_color(f, record);
+    Self::write_style(f, record);
   }
 }
 

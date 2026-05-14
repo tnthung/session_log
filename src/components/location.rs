@@ -19,8 +19,8 @@ impl Component for Location {
     write!(f, "{}", Self::value(record)).unwrap();
   }
 
-  #[cfg(feature = "color")]
-  fn write_color<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  #[cfg(feature = "style")]
+  fn write_style<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", Self::value(record).bright_black()).unwrap();
   }

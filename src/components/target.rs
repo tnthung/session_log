@@ -10,8 +10,8 @@ impl Component for Target {
     write!(f, "{}", record.target()).unwrap();
   }
 
-  #[cfg(feature = "color")]
-  fn write_color<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  #[cfg(feature = "style")]
+  fn write_style<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", record.target().bright_black()).unwrap();
   }

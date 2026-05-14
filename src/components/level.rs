@@ -17,8 +17,8 @@ impl Component for Level {
     }.unwrap();
   }
 
-  #[cfg(feature = "color")]
-  fn write_color<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  #[cfg(feature = "style")]
+  fn write_style<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", match record.level() {
       LogLevel::Trace => "[TRACE]".bright_black(),
@@ -46,8 +46,8 @@ impl Component for LevelNoPadding {
     }.unwrap();
   }
 
-  #[cfg(feature = "color")]
-  fn write_color<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  #[cfg(feature = "style")]
+  fn write_style<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", match record.level() {
       LogLevel::Trace => "TRACE".bright_black(),
@@ -75,8 +75,8 @@ impl Component for LevelCompact {
     }.unwrap();
   }
 
-  #[cfg(feature = "color")]
-  fn write_color<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  #[cfg(feature = "style")]
+  fn write_style<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", match record.level() {
       LogLevel::Trace => "[T]".bright_black(),
@@ -104,8 +104,8 @@ impl Component for LevelMoreCompact {
     }.unwrap();
   }
 
-  #[cfg(feature = "color")]
-  fn write_color<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  #[cfg(feature = "style")]
+  fn write_style<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", match record.level() {
       LogLevel::Trace => "T".bright_black(),

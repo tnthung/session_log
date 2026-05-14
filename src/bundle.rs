@@ -37,11 +37,7 @@ impl_bundle! { A B C D E F G H I J K L }
 
 
 impl<B: Bundle> Component for B {
-  fn write_plain<'a>(f: &mut dyn Write, record: &Record<'a>) {
-    Self::write(f, record);
-  }
-
-  fn write_color<'a>(f: &mut dyn Write, record: &Record<'a>) {
-    Self::print(f, record);
-  }
+  fn write_plain<'a>(f: &mut dyn Write, record: &Record<'a>) { Self::write(f, record); }
+  #[cfg(feature = "style")]
+  fn write_style<'a>(f: &mut dyn Write, record: &Record<'a>) { Self::print(f, record); }
 }

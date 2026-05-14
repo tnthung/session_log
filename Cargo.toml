@@ -16,6 +16,4 @@ colored = { version = "3.1.1", optional = true }
 uuid = { version = "1.23.1", features = ["v7"] }
 
 [features]
-color = ["dep:colored"]
-style = []
-batch = []
+style = ["dep:colored"]
