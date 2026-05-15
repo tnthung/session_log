@@ -28,16 +28,19 @@ pub trait Component: Send + Sync {
 
 
 pub(crate) trait ComponentEx: Component {
+  #[inline(always)]
   fn write<'a>(f: &mut dyn Write, record: &Record<'a>) {
     Self::write_plain(f, record);
   }
 
   #[cfg(not(feature = "style"))]
+  #[inline(always)]
   fn print<'a>(f: &mut dyn Write, record: &Record<'a>) {
     Self::write_plain(f, record);
   }
 
   #[cfg(feature = "style")]
+  #[inline(always)]
   fn print<'a>(f: &mut dyn Write, record: &Record<'a>) {
     Self::write_style(f, record);
   }
