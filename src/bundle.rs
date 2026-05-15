@@ -5,6 +5,7 @@ use log::Record;
 
 pub(crate) trait Bundle: Send + Sync {
   fn write<'a>(f: &mut dyn Write, record: &Record<'a>);
+  #[cfg_attr(not(feature = "style"), allow(dead_code))]
   fn print<'a>(f: &mut dyn Write, record: &Record<'a>);
 }
 

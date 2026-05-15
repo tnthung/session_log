@@ -34,6 +34,7 @@ pub(crate) trait ComponentEx: Component {
   }
 
   #[cfg(not(feature = "style"))]
+  #[allow(dead_code)]
   #[inline(always)]
   fn print<'a>(f: &mut dyn Write, record: &Record<'a>) {
     Self::write_plain(f, record);
