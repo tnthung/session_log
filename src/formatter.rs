@@ -45,9 +45,10 @@ impl<B: Bundle+'static> Formatter<B> {
   }
 
   pub fn attach(self) {
-    if self.write_outputs.is_empty() &&
-       self.print_outputs.is_empty() &&
-       self.session_outputs.is_empty() {
+    if self.write_outputs.is_empty()
+    && self.print_outputs.is_empty()
+    && self.session_outputs.is_empty()
+    {
       eprintln!("Warning: No output is added to the formatter. Logs will be discarded.");
       return;
     }
