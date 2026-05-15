@@ -1,23 +1,24 @@
 use super::formatter::FormatterTrait;
-use std::sync::{Mutex, RwLock};
+use std::sync::atomic::{AtomicU8, Ordering};
+use std::sync::Mutex;
 use log::Log;
 
 pub use log::Level;
 
 
 pub struct Logger {
-  log_level:  RwLock<Level>,
+  log_level:  AtomicU8,
   formatters: Mutex<Vec<Box<dyn FormatterTrait>>>,
 }
 
 static LOGGER: Logger = Logger {
-  log_level:  RwLock::new(Level::Info),
+  log_level:  AtomicU8::new(level_rank(Level::Info)),
   formatters: Mutex::new(Vec::new()),
 };
 
 impl Logger {
   pub fn set_log_level(level: Level) {
-    LOGGER.log_level.write().unwrap().clone_from(&level);
+    LOGGER.log_level.store(level_rank(level), Ordering::Relaxed);
     log::set_max_level(level.to_level_filter());
   }
 
@@ -36,7 +37,7 @@ impl Logger {
 
 impl Log for Logger {
   fn enabled(&self, metadata: &log::Metadata) -> bool {
-    metadata.level() <= *self.log_level.read().unwrap()
+    level_rank(metadata.level()) <= self.log_level.load(Ordering::Relaxed)
   }
 
   fn log(&self, record: &log::Record) {
@@ -47,4 +48,9 @@ impl Log for Logger {
   fn flush(&self) {
     Self::for_each(|fmt| fmt.flush());
   }
+}
+
+
+const fn level_rank(level: Level) -> u8 {
+  level as usize as u8
 }
