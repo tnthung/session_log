@@ -6,12 +6,12 @@ use super::Component;
 pub struct Target;
 
 impl Component for Target {
-  fn write_plain<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_plain<'a, W: std::io::Write + ?Sized>(f: &mut W, record: &log::Record<'a>) {
     write!(f, "{}", record.target()).unwrap();
   }
 
   #[cfg(feature = "style")]
-  fn write_style<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_style<'a, W: std::io::Write + ?Sized>(f: &mut W, record: &log::Record<'a>) {
     use colored::Colorize;
     write!(f, "{}", record.target().bright_black()).unwrap();
   }

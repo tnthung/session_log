@@ -7,7 +7,7 @@ use chrono::{Local, Utc, SecondsFormat};
 pub struct FullTime;
 
 impl Component for FullTime {
-  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+  fn write_plain<'a, W: std::io::Write + ?Sized>(f: &mut W, _: &log::Record<'a>) {
     write!(f, "{}", Local::now().to_rfc3339_opts(SecondsFormat::Micros, true)).unwrap();
   }
 }
@@ -18,7 +18,7 @@ impl Component for FullTime {
 pub struct LocalTime;
 
 impl Component for LocalTime {
-  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+  fn write_plain<'a, W: std::io::Write + ?Sized>(f: &mut W, _: &log::Record<'a>) {
     write!(f, "{}", Local::now().format("%Y-%m-%dT%H:%M:%S%.6f")).unwrap();
   }
 }
@@ -29,7 +29,7 @@ impl Component for LocalTime {
 pub struct UtcTime;
 
 impl Component for UtcTime {
-  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+  fn write_plain<'a, W: std::io::Write + ?Sized>(f: &mut W, _: &log::Record<'a>) {
     write!(f, "{}", Utc::now().format("%Y-%m-%dT%H:%M:%S%.6f")).unwrap();
   }
 }
@@ -40,7 +40,7 @@ impl Component for UtcTime {
 pub struct ShortTime;
 
 impl Component for ShortTime {
-  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+  fn write_plain<'a, W: std::io::Write + ?Sized>(f: &mut W, _: &log::Record<'a>) {
     write!(f, "{}", Local::now().format("%H:%M:%S%.6f")).unwrap();
   }
 }
@@ -51,7 +51,7 @@ impl Component for ShortTime {
 pub struct SimpleTime;
 
 impl Component for SimpleTime {
-  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+  fn write_plain<'a, W: std::io::Write + ?Sized>(f: &mut W, _: &log::Record<'a>) {
     write!(f, "{}", Local::now().format("%H:%M:%S")).unwrap();
   }
 }

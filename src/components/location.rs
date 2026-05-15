@@ -6,7 +6,7 @@ use super::Component;
 pub struct Location;
 
 impl Component for Location {
-  fn write_plain<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_plain<'a, W: std::io::Write + ?Sized>(f: &mut W, record: &log::Record<'a>) {
     match (record.file(), record.line()) {
       (Some(file), Some(line)) => write!(f, "{file}:{line}"),
       (Some(file), None)       => write!(f, "{file}"),
@@ -16,7 +16,7 @@ impl Component for Location {
   }
 
   #[cfg(feature = "style")]
-  fn write_style<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_style<'a, W: std::io::Write + ?Sized>(f: &mut W, record: &log::Record<'a>) {
     use colored::{control, Color};
 
     if !control::SHOULD_COLORIZE.should_colorize() {

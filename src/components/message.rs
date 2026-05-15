@@ -6,7 +6,7 @@ use super::Component;
 pub struct Message;
 
 impl Component for Message {
-  fn write_plain<'a>(f: &mut dyn std::io::Write, record: &log::Record<'a>) {
+  fn write_plain<'a, W: std::io::Write + ?Sized>(f: &mut W, record: &log::Record<'a>) {
     write!(f, "{}", record.args()).unwrap();
   }
 }

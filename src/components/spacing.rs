@@ -6,7 +6,7 @@ use super::Component;
 pub struct SingleSpace;
 
 impl Component for SingleSpace {
-  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+  fn write_plain<'a, W: std::io::Write + ?Sized>(f: &mut W, _: &log::Record<'a>) {
     write!(f, " ").unwrap();
   }
 }
@@ -17,7 +17,7 @@ impl Component for SingleSpace {
 pub struct SpacedHyphen;
 
 impl Component for SpacedHyphen {
-  fn write_plain<'a>(f: &mut dyn std::io::Write, _: &log::Record<'a>) {
+  fn write_plain<'a, W: std::io::Write + ?Sized>(f: &mut W, _: &log::Record<'a>) {
     write!(f, " - ").unwrap();
   }
 }
